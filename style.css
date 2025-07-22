@@ -1,0 +1,390 @@
+/* =========================================================
+   1. Estilos Globales y Reseteo Básico
+   ========================================================= */
+body {
+    font-family: 'Trebuchet MS', sans-serif; /* Fuente clara y legible */
+    margin: 0;
+    padding: 0;
+    background-color: #e6ddbf; /* Fondo claro para suavizar */
+    color: #333; /* Color de texto oscuro para contraste */
+    line-height: 1.6; /* Espaciado entre líneas para mejor lectura */
+}
+
+a {
+    color: #FF0000; /* Color rojo para enlaces, típico y claro */
+    text-decoration: none; /* Sin subrayado por defecto */
+}
+
+a:hover {
+    text-decoration: underline; /* Subrayado al pasar el mouse */
+}
+
+/* =========================================================
+   2. Header y Navegación
+   ========================================================= */
+header {
+    background-color: #222; /* Fondo oscuro para el encabezado */
+    color: #fff; /* Texto blanco */
+    padding: 1rem 0;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Sombra sutil */
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem; /* Tamaño grande para el título principal */
+    letter-spacing: 2px; /* Espaciado entre letras para el estilo */
+}
+
+nav {
+    margin-top: 10px;
+}
+
+nav a {
+    color: #fff;
+    margin: 0 15px;
+    font-weight: bold;
+    transition: color 0.3s ease; /* Transición suave para el color al pasar el mouse */
+}
+
+nav a:hover {
+    color: #FF0000; /* Cambia de color al pasar el mouse */
+    text-decoration: none;
+}
+
+/* =========================================================
+   3. Contenido Principal (main) y Contenedores de Sección
+   ========================================================= */
+main {
+    padding: 20px; /* Padding por defecto para el contenido general */
+    max-width: 960px; /* Ancho máximo unificado para todo el contenido principal */
+    margin: 20px auto; /* Centrar el contenido y darle espacio */
+    background-color: #fff; /* Fondo blanco para las secciones de contenido */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Sombra ligera para el contenedor principal */
+    box-sizing: border-box; /* Incluye padding y border dentro del ancho/alto */
+}
+
+/* Estilos base para todas las secciones principales que usan .section-container */
+.section-container {
+    width: 100%; /* La sección ocupará el 100% del ancho disponible en 'main' */
+    /* No se necesita max-width aquí, ya que main lo controla */
+    margin: 40px auto; /* Centra la sección dentro de 'main' y le da espacio */
+    padding: 30px; /* Padding interno para el contenido */
+    background-color: #FFFFFF; /* Fondo blanco específico para la sección (si main no lo cubre siempre) */
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box; /* ¡MUY IMPORTANTE! Incluye padding y border dentro del ancho/alto del elemento. */
+    color: #000000; /* Color de texto por defecto para estas secciones */
+}
+
+/* Estilos para el video de multimedia, para que no desborde */
+.media-item iframe {
+    width: 100%; /* Asegura que el iframe se ajuste al ancho de su padre */
+    height: auto; /* Mantiene la proporción */
+    aspect-ratio: 16 / 9; /* Esto es ideal para videos de YouTube: ancho / alto */
+    margin-bottom: 10px;
+}
+
+h2 { /* Títulos generales de sección */
+    color: #CC0000;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* =========================================================
+   4. Búsqueda y Filtros
+   ========================================================= */
+.search-container {
+    display: flex; /* Para alinear el input y el botón */
+    justify-content: center; /* Centrar los elementos */
+    margin-bottom: 30px;
+    gap: 10px; /* Espacio entre los elementos */
+}
+
+.search-container input[type="text"] {
+    padding: 12px 15px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    width: 60%; /* Ancho del campo de búsqueda */
+    max-width: 500px; /* Ancho máximo */
+}
+
+.search-container button {
+    padding: 12px 20px;
+    background-color: #28a745; /* Botón verde para buscar */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.search-container button:hover {
+    background-color: #218838; /* Verde más oscuro al pasar el mouse */
+}
+
+/* =========================================================
+   5. Contenedores de Grid (Cards)
+   ========================================================= */
+.grid-container {
+    display: grid;
+    /* Por defecto, una columna. Se ajustará en pantallas más grandes. */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px; /* Espacio entre las cards */
+    justify-content: center; /* Centrar las cards si no llenan todo el espacio */
+}
+
+.banda-card,
+.evento-card,
+.media-item {
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease; /* Efecto al pasar el mouse */
+    display: flex; /* Para organizar el contenido dentro de la card */
+    flex-direction: column;
+    justify-content: space-between; /* Empuja el botón al final */
+}
+
+.banda-card:hover,
+.evento-card:hover,
+.media-item:hover {
+    transform: translateY(-5px); /* Pequeño levantamiento al pasar el mouse */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.banda-card h3,
+.evento-card h3 {
+    color: #333;
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.banda-card p,
+.evento-card p,
+.media-item p {
+    font-size: 0.95rem;
+    color: #555;
+}
+
+.ver-mas-btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #ff0000a4; /* Rojo más oscuro para botones "Ver más" */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    margin-top: 15px; /* Espacio arriba del botón */
+    transition: background-color 0.3s ease;
+}
+
+.ver-mas-btn:hover {
+    background-color: #a83f3f; /* Rojo más claro al pasar el mouse */
+}
+
+.media-item img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+.media-item audio {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.media-item .media-relacion {
+    font-style: italic;
+    font-size: 0.85rem;
+    color: #777;
+}
+
+/* =========================================================
+   6. Footer
+   ========================================================= */
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    background-color: #222;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* =========================================================
+   7. Estilos Específicos para LIBRO y CONTACTO
+   ========================================================= */
+
+/* Estilos para la sección LIBRO */
+#libro h2 {
+    text-align: center; /* Título del libro centrado */
+}
+
+#libro p {
+    text-align: justify; /* Párrafos del libro justificados */
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+
+/* Centrar el botón "Descargar Libro" */
+#libro .button { /* Asumiendo que usas 'class="button"' en el enlace del libro */
+    display: inline-block; /* Para que margin: auto funcione si lo pones en un contenedor */
+    margin: 15px auto 0; /* Centra el botón y le da margen superior */
+    background-color: #CC0000; /* Color del botón principal, si lo quieres rojo */
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease;
+}
+
+#libro .button:hover {
+    background-color: #a83f3f; /* Rojo más oscuro al pasar el mouse */
+}
+
+/* Estilos para la sección Contacto */
+#contacto h2 {
+    color: #CC0000;
+    text-align: center;
+    margin-bottom: 25px;
+    font-size: 2em;
+}
+
+#contacto p {
+    font-size: 1.1em;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    text-align: center; /* Para el texto introductorio de contacto */
+}
+
+#contacto ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto; /* Centra la lista completa */
+    display: inline-block; /* Necesario para que margin: auto funcione en la UL */
+    text-align: left; /* Alinea el texto de los ítems a la izquierda DENTRO de la UL centrada */
+}
+
+#contacto li {
+    margin-bottom: 12px;
+    font-size: 1.1em;
+}
+
+#contacto li a {
+    color: #CC0000;
+    text-decoration: none;
+}
+
+#contacto li a:hover {
+    text-decoration: underline;
+}
+
+/* =========================================================
+   8. Media Queries para Responsividad
+   ========================================================= */
+
+/* Para pantallas medianas y pequeñas (hasta 768px, tablets en vertical, etc.) */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 1.8rem;
+    }
+
+    nav a {
+        margin: 0 8px;
+        font-size: 0.9rem;
+    }
+
+    main {
+        padding: 10px; /* Reduce el padding de main en pantallas medianas */
+        margin: 10px auto;
+    }
+
+    .section-container {
+        width: 95%; /* Ocupa un poco más de ancho en tablets */
+        padding: 20px; /* Reduce el padding en tablets */
+    }
+
+    h2 {
+        font-size: 1.7rem;
+    }
+
+    .search-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .search-container input[type="text"] {
+        width: 90%;
+        margin-bottom: 10px;
+    }
+
+    .search-container button {
+        width: 90%;
+    }
+
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Para pantallas aún más pequeñas (hasta 480px, smartphones) */
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 1.5rem;
+    }
+
+    nav {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    nav a {
+        padding: 5px 0;
+        margin: 0; /* Elimina márgenes horizontales si se apilan */
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    nav a:last-child {
+        border-bottom: none;
+    }
+
+    main { /* También ajusta el padding de main para móviles muy pequeños */
+        padding: 5px;
+    }
+
+    .section-container {
+        width: 98%; /* Ocupa casi todo el ancho en móviles */
+        padding: 15px; /* Más reducción de padding en móviles */
+    }
+
+    #libro h2,
+    #contacto h2 {
+        font-size: 1.6em;
+    }
+
+    #libro p,
+    #contacto p,
+    #contacto li {
+        font-size: 1em;
+    }
+
+    .search-container input[type="text"] {
+        width: 95%; /* Ajusta un poco más el campo de búsqueda */
+    }
+
+    .search-container button {
+        width: 95%; /* Ajusta un poco más el botón de búsqueda */
+    }
+}
