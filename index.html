@@ -28,27 +28,30 @@
         <section id="busqueda-y-filtros">
             <h2>Explorá el archivo</h2>
             <div class="search-container">
-                <input type="text" id="busqueda" placeholder="Buscar bandas, integrantes, eventos, generos...">
-                <button id="btn-buscar">Buscar</button>
-            </div>
-            </section>
-
-        <section id="bandas">
-            <h2>Bandas</h2>
-            <div id="lista-bandas" class="grid-container">
-                <p>Cargando bandas...</p>
+                <input type="text" id="searchInput" placeholder="Buscar bandas, integrantes, eventos, generos...">
+                <button id="searchButton">Buscar</button>
             </div>
         </section>
 
-        <section id="eventos">
-            <h2>Eventos históricos</h2>
+        <section id="bandas" class="section-container"> <h2>Bandas</h2>
+            <div class="search-container">
+                <input type="text" id="searchInputBands" placeholder="Buscar bandas..."> <button id="searchButtonBands">Buscar</button> </div>
+
+            <div class="grid-container" id="bandasGrid">
+                <p>Cargando bandas...</p> </div>
+
+            <div class="load-more-container">
+                <button id="loadMoreBandsBtn" class="ver-mas-btn">Ver más bandas</button>
+            </div>
+        </section>
+
+        <section id="eventos" class="section-container"> <h2>Eventos históricos</h2>
             <div id="lista-eventos" class="grid-container">
                 <p>Eventos disponibles próximamente.</p>
             </div>
         </section>
 
-        <section id="multimedia">
-            <h2>Galería multimedia</h2>
+        <section id="multimedia" class="section-container"> <h2>Galería multimedia</h2>
             <div id="galeria-multimedia" class="grid-container">
                 <p>Contenido multimedia disponible próximamente.</p>
             </div>
@@ -64,23 +67,17 @@
                 <p>Descargá gratis el libro completo en formato PDF:</p>
                 <p><a href="https://drive.google.com/file/d/1gIPdwzKO445QMiX_NEC6Me9FJFBzkENg/view?usp=sharing" target="_blank" class="button">Descargar</a></p>
         </section>
-        
+
         <section id="contacto" class="section-container">
-    <h2>Contacto</h2>
-    <ul>
-        <li>Email: <a href="mailto:rafaelaladosb@gmail.com">rafaelaladosb@gmail.com</a></li>
-        <li>Instagram: <a href="https://instagram.com/rafaelaladosb" target="_blank">/rafaelaladosb</a></li>
-        <li>Facebook: <a href="https://facebook.com/rafaelaladosb" target="_blank">/rafaelaladosb</a></li>
-        <li>WhatsApp: <a href="https://wa.me/5493492418918" target="_blank">Enviar mensaje</a></li> </ul>
-    </ul>
-    </section>
-
-        </main>
-        
-
-<footer>
-    <p>&copy; 2025 Rafaela Lados B. Todos los derechos reservados.</p>
-</footer>
+            <h2>Contacto</h2>
+            <ul>
+                <li>Email: <a href="mailto:rafaelaladosb@gmail.com">rafaelaladosb@gmail.com</a></li>
+                <li>Instagram: <a href="https://instagram.com/rafaelaladosb" target="_blank">/rafaelaladosb</a></li>
+                <li>Facebook: <a href="https://facebook.com/rafaelaladosb" target="_blank">/rafaelaladosb</a></li>
+                <li>WhatsApp: <a href="https://wa.me/5493492418918" target="_blank">Enviar mensaje</a></li>
+            </ul>
+        </section>
+    </main>
 
     <footer>
         <p>&copy; 2025 Rafaela Lados B. Archivo histórico del rock local.</p>
