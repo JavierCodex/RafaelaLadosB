@@ -43,7 +43,8 @@ function parseCsv(csvText) {
         const values = nonEmptyLines[i].split(',').map(value => value.trim());
         const row = {};
         for (let j = 0; j < headers.length; j++) {
-            row[headers[j]] = values[j];
+            // Asigna el valor, asegurándose de que sea una cadena, incluso si la celda está vacía
+            row[headers[j]] = values[j] !== undefined ? values[j] : '';
         }
         data.push(row);
     }
@@ -84,7 +85,10 @@ async function cargarDatosDesdeSheets() {
 
     } catch (error) {
         console.error('Error al cargar datos desde Google Sheets:', error);
-        document.getElementById('bandasGrid').innerHTML = '<p>Error al cargar los datos. Por favor, revisa tu conexión y las URLs de Google Sheets.</p>';
+        const bandasGrid = document.getElementById('bandasGrid');
+        if (bandasGrid) {
+            bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">Error al cargar los datos. Por favor, revisa tu conexión y las URLs de Google Sheets.</p>';
+        }
         // Ocultar el botón "Ver más" si hay un error de carga
         const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn');
         if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
@@ -105,7 +109,7 @@ function createBandCardHTML(banda) {
     return `
         <div class="banda-card">
             <h3>${banda.Nombre_Banda}</h3>
-            <p><strong>Género:</strong> ${banda.Genero}</p>
+            <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
             <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
             ${nombresIntegrantes ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` : ''}
             <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
@@ -141,8 +145,8 @@ function loadMoreBands() {
     const bandsToDisplay = dataSource.slice(startIndex, endIndex);
 
     if (bandsToDisplay.length > 0) {
-        // Eliminar el mensaje "Cargando bandas..." si existe
-        if (bandasGrid.querySelector('p')) {
+        // Eliminar el mensaje "Cargando bandas..." si existe o si no hay nada en el grid y es la primera carga
+        if (bandasGrid.innerHTML.includes('Cargando bandas...') || displayedBandsCount === 0) {
             bandasGrid.innerHTML = '';
         }
         appendBandsToGrid(bandsToDisplay, bandasGrid);
@@ -151,9 +155,15 @@ function loadMoreBands() {
 
     // Ocultar el botón si ya no hay más bandas por cargar
     if (displayedBandsCount >= dataSource.length) {
-        loadMoreBandsBtn.style.display = 'none';
+        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
     } else {
-        loadMoreBandsBtn.style.display = 'block'; // Asegurarse de que esté visible si hay más
+        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'block'; // Asegurarse de que esté visible si hay más
+    }
+
+    // Si no hay bandas para mostrar después de un filtro y el grid está vacío
+    if (dataSource.length === 0 && displayedBandsCount === 0) {
+        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas para tu búsqueda.</p>';
+        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
     }
 }
 
@@ -162,15 +172,16 @@ function loadMoreBands() {
 // =========================================================
 function mostrarEventos(eventosAMostrar) {
     const listaEventosDiv = document.getElementById('lista-eventos');
-    listaEventosDiv.innerHTML = '';
+    listaEventosDiv.innerHTML = ''; // Limpiar siempre al mostrar eventos
 
-    if (eventosAMostrar.length === 0) {
+    if (!eventosAMostrar || eventosAMostrar.length === 0) {
         listaEventosDiv.innerHTML = '<p>No se encontraron eventos.</p>';
         return;
     }
 
     eventosAMostrar.forEach(evento => {
-        const bandasParticipantes = evento.Bandas_Participantes_IDs
+        // Asegúrate de que Bandas_Participantes_IDs sea una cadena antes de split
+        const bandasParticipantes = (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.trim() !== '')
             ? evento.Bandas_Participantes_IDs.split(',').map(id => id.trim())
                 .map(bandaId => todasLasBandas.find(b => b.ID_Banda === bandaId)?.Nombre_Banda || 'Banda Desconocida')
                 .join(', ')
@@ -179,9 +190,9 @@ function mostrarEventos(eventosAMostrar) {
         const eventoDiv = document.createElement('div');
         eventoDiv.classList.add('evento-card');
         eventoDiv.innerHTML = `
-            <h3>${evento.Descripcion}</h3>
-            <p><strong>Fecha:</strong> ${evento.Fecha}</p>
-            <p><strong>Lugar:</strong> ${evento.Lugar}</p>
+            <h3>${evento.Descripcion || 'Evento sin título'}</h3>
+            <p><strong>Fecha:</strong> ${evento.Fecha || 'Sin fecha'}</p>
+            <p><strong>Lugar:</strong> ${evento.Lugar || 'Sin lugar'}</p>
             <p><strong>Bandas:</strong> ${bandasParticipantes}</p>
             <button class="ver-mas-btn" data-id="${evento.ID_Evento}" data-tipo="evento">Ver más</button>
         `;
@@ -196,9 +207,9 @@ function mostrarEventos(eventosAMostrar) {
 
 function mostrarMultimedia(multimediaAMostrar) {
     const galeriaDiv = document.getElementById('galeria-multimedia');
-    galeriaDiv.innerHTML = '';
+    galeriaDiv.innerHTML = ''; // Limpiar siempre al mostrar multimedia
 
-    if (multimediaAMostrar.length === 0) {
+    if (!multimediaAMostrar || multimediaAMostrar.length === 0) {
         galeriaDiv.innerHTML = '<p>No se encontró contenido multimedia.</p>';
         return;
     }
@@ -209,17 +220,17 @@ function mostrarMultimedia(multimediaAMostrar) {
         let contentHtml = '';
 
         if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
-            contentHtml = `<img src="${item.URL}" alt="${item.Descripcion}" class="media-image">`;
+            contentHtml = `<img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" class="media-image">`;
         } else if (item.Tipo === 'Audio') {
             contentHtml = `
                 <audio controls class="media-audio">
-                    <source src="${item.URL}" type="audio/mpeg">
+                    <source src="${item.URL || ''}" type="audio/mpeg">
                     Tu navegador no soporta el elemento de audio.
                 </audio>
             `;
         } else if (item.Tipo === 'Video') {
-            // Se asume que item.URL para Video es el ID del video de YouTube o una URL que se puede parsear
-            const videoIdMatch = item.URL.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
+            const url = item.URL || '';
+            const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
             const videoId = videoIdMatch ? videoIdMatch[1] : null;
 
             if (videoId) {
@@ -229,18 +240,22 @@ function mostrarMultimedia(multimediaAMostrar) {
                     </iframe>
                 `;
             } else {
-                contentHtml = `<p>Error al cargar el video. URL no válida.</p>`;
+                contentHtml = `<p>Error al cargar el video. URL no válida: ${url}</p>`;
             }
         }
 
-        const relacionadoCon = item.Tipo_Relacion === 'Banda'
-            ? todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida'
-            : todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion || 'Evento Desconocido';
+        // Obtener la relación, añadiendo verificaciones para evitar errores
+        let relacionadoCon = 'N/A';
+        if (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado) {
+            relacionadoCon = todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
+        } else if (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado) {
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion || 'Evento Desconocido';
+        }
        
         itemDiv.innerHTML = `
             ${contentHtml}
-            <h4>${item.Descripcion}</h4>
-            <p>Tipo: ${item.Tipo}</p>
+            <h4>${item.Descripcion || 'Sin descripción'}</h4>
+            <p>Tipo: ${item.Tipo || 'N/A'}</p>
             ${relacionadoCon !== 'N/A' ? `<p class="media-relacion">Relacionado con: ${relacionadoCon}</p>` : ''}
             <button class="ver-mas-btn" data-id="${item.ID_Media}" data-tipo="multimedia">Ver más</button>
         `;
@@ -301,11 +316,11 @@ function realizarBusquedaBandas(texto) {
     const bandasGrid = document.getElementById('bandasGrid');
 
     currentFilteredBands = todasLasBandas.filter(banda =>
-        banda.Nombre_Banda.toLowerCase().includes(textoNormalizado) ||
-        banda.Genero.toLowerCase().includes(textoNormalizado) ||
-        banda.Biografia.toLowerCase().includes(textoNormalizado) ||
+        (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
+        (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
+        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) || // <-- Cambio aquí
         todosLosIntegrantes.some(int =>
-            int.ID_Banda === banda.ID_Banda && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado)
+            int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
 
@@ -315,7 +330,7 @@ function realizarBusquedaBandas(texto) {
 
     if (currentFilteredBands.length === 0) {
         bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas para tu búsqueda.</p>';
-        loadMoreBandsBtn.style.display = 'none';
+        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
         return;
     }
 
@@ -329,22 +344,22 @@ function realizarBusquedaGlobal(texto) {
 
     // === Búsqueda y visualización de Bandas ===
     // Reseteamos el estado de paginación para la búsqueda
-    currentBandIndex = 0;
+    currentBandIndex = 0; // Not used currently, can be removed if not needed elsewhere
     displayedBandsCount = 0;
 
     currentFilteredBands = todasLasBandas.filter(banda =>
-        banda.Nombre_Banda.toLowerCase().includes(textoNormalizado) ||
-        banda.Genero.toLowerCase().includes(textoNormalizado) ||
-        banda.Biografia.toLowerCase().includes(textoNormalizado) ||
+        (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
+        (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
+        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) || // <-- Cambio aquí
         todosLosIntegrantes.some(int =>
-            int.ID_Banda === banda.ID_Banda && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado)
+            int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
     const bandasGrid = document.getElementById('bandasGrid');
     bandasGrid.innerHTML = ''; // Limpiar el grid de bandas
     if (currentFilteredBands.length === 0) {
         bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas que coincidan.</p>';
-        loadMoreBandsBtn.style.display = 'none';
+        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
     } else {
         loadMoreBands(); // Cargar el primer lote de resultados de búsqueda para bandas
     }
@@ -352,22 +367,22 @@ function realizarBusquedaGlobal(texto) {
 
     // === Búsqueda y visualización de Eventos ===
     const eventosFiltrados = todosLosEventos.filter(evento =>
-        evento.Descripcion.toLowerCase().includes(textoNormalizado) ||
-        evento.Lugar.toLowerCase().includes(textoNormalizado) ||
-        evento.Bandas_Participantes_IDs.split(',').some(id => {
+        (evento.Descripcion && evento.Descripcion.toLowerCase().includes(textoNormalizado)) ||
+        (evento.Lugar && evento.Lugar.toLowerCase().includes(textoNormalizado)) ||
+        (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').some(id => {
             const banda = todasLasBandas.find(b => b.ID_Banda === id.trim());
-            return banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado);
-        })
+            return banda && (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado));
+        }))
     );
     mostrarEventos(eventosFiltrados);
 
 
     // === Búsqueda y visualización de Multimedia ===
     const multimediaFiltrado = todoElMultimedia.filter(item =>
-        item.Descripcion.toLowerCase().includes(textoNormalizado) ||
-        item.Tipo.toLowerCase().includes(textoNormalizado) ||
-        (item.Tipo_Relacion === 'Banda' && todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo_Relacion === 'Evento' && todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion.toLowerCase().includes(textoNormalizado))
+        (item.Descripcion && item.Descripcion.toLowerCase().includes(textoNormalizado)) ||
+        (item.Tipo && item.Tipo.toLowerCase().includes(textoNormalizado)) ||
+        (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado && todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
+        (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado && todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion.toLowerCase().includes(textoNormalizado))
     );
     mostrarMultimedia(multimediaFiltrado);
 }
@@ -400,16 +415,22 @@ function handleVerMasClick(event) {
     const id = event.target.dataset.id;
     const tipo = event.target.dataset.tipo;
 
-    if (tipo === 'banda') {
-        mostrarDetalleBanda(id);
-    } else if (tipo === 'evento') {
-        mostrarDetalleEvento(id);
-    } else if (tipo === 'multimedia') {
-        mostrarDetalleMultimedia(id);
-    }
+    // Puedes implementar un modal o redirección aquí
+    alert(`Se hizo clic en "Ver más" para ${tipo} con ID: ${id}. Aquí se abriría un modal o una página de detalle.`);
+    // Ejemplo de llamadas a funciones de detalle (a implementar en un modal real)
+    // if (tipo === 'banda') {
+    //     mostrarDetalleBanda(id);
+    // } else if (tipo === 'evento') {
+    //     mostrarDetalleEvento(id);
+    // } else if (tipo === 'multimedia') {
+    //     mostrarDetalleMultimedia(id);
+    // }
 }
 
-
+// Las siguientes funciones de detalle están comentadas o incompletas porque
+// requieren un modal o un sistema de visualización de detalles más robusto.
+// Se dejan como esqueleto para futura implementación.
+/*
 function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
     if (bandaSeleccionada) {
@@ -417,9 +438,9 @@ function mostrarDetalleBanda(idBanda) {
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
         const eventosDeBanda = todosLosEventos.filter(evento =>
-            evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
+            evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
         );
-        const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion} (${e.Fecha})`).join('; ');
+        const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
 
         const multimediaDeBanda = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
@@ -427,34 +448,118 @@ function mostrarDetalleBanda(idBanda) {
         let multimediaHtml = multimediaDeBanda.length > 0 ? '<h4>Multimedia relacionado:</h4>' : '';
         multimediaDeBanda.forEach(item => {
             if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
-                multimediaHtml += `<p><img src="${item.URL}" alt="${item.Descripcion}" style="max-width: 100px; max-height: 100px;"> ${item.Descripcion}</p>`;
+                multimediaHtml += `<p><img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" style="max-width: 100px; max-height: 100px;"> ${item.Descripcion || 'Sin descripción'}</p>`;
             } else if (item.Tipo === 'Audio') {
-                multimediaHtml += `<p>${item.Descripcion}: <audio controls><source src="${item.URL}" type="audio/mpeg"></audio></p>`;
+                multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <audio controls><source src="${item.URL || ''}" type="audio/mpeg"></audio></p>`;
             } else if (item.Tipo === 'Video') {
-                 const videoIdMatch = item.URL.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
+                 const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
                  const videoId = videoIdMatch ? videoIdMatch[1] : null;
                  if (videoId) {
-                     multimediaHtml += `<p>${item.Descripcion}: <iframe width="150" height="100" src="https://www.youtube.com/embed/${videoId}"
+                     multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <iframe width="150" height="100" src="https://www.youtube.com/embed/${videoId}"
                             frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                    </iframe>
-                `;
+                    </iframe>`;
+                } else {
+                    multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: Error al cargar el video. URL no válida.</p>`;
+                }
+            }
+        });
+
+        alert(`
+            Detalle de Banda: ${bandaSeleccionada.Nombre_Banda}
+            -----------------------------------
+            Género: ${bandaSeleccionada.Genero || 'N/A'}
+            Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}
+            Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}
+            Integrantes: ${nombresIntegrantes || 'No disponibles'}
+            Eventos Participados: ${nombresEventos || 'Ninguno'}
+            ${multimediaHtml}
+        `);
+    }
+}
+
+function mostrarDetalleEvento(idEvento) {
+    const eventoSeleccionado = todosLosEventos.find(evento => evento.ID_Evento === idEvento);
+    if (eventoSeleccionado) {
+        const bandasParticipantes = (eventoSeleccionado.Bandas_Participantes_IDs && eventoSeleccionado.Bandas_Participantes_IDs.trim() !== '')
+            ? eventoSeleccionado.Bandas_Participantes_IDs.split(',').map(id => id.trim())
+                .map(bandaId => todasLasBandas.find(b => b.ID_Banda === bandaId)?.Nombre_Banda || 'Banda Desconocida')
+                .join(', ')
+            : 'No especificadas';
+
+        const multimediaDeEvento = todoElMultimedia.filter(item =>
+            item.Tipo_Relacion === 'Evento' && item.ID_Relacionado === eventoSeleccionado.ID_Evento
+        );
+        let multimediaHtml = multimediaDeEvento.length > 0 ? '<h4>Multimedia relacionado:</h4>' : '';
+        multimediaDeEvento.forEach(item => {
+            if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
+                multimediaHtml += `<p><img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" style="max-width: 100px; max-height: 100px;"> ${item.Descripcion || 'Sin descripción'}</p>`;
+            } else if (item.Tipo === 'Audio') {
+                multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <audio controls><source src="${item.URL || ''}" type="audio/mpeg"></audio></p>`;
+            } else if (item.Tipo === 'Video') {
+                 const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
+                 const videoId = videoIdMatch ? videoIdMatch[1] : null;
+                 if (videoId) {
+                     multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <iframe width="150" height="100" src="https://www.youtube.com/embed/${videoId}"
+                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+                    </iframe>`;
+                } else {
+                    multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: Error al cargar el video. URL no válida.</p>`;
+                }
+            }
+        });
+
+
+        alert(`
+            Detalle de Evento: ${eventoSeleccionado.Descripcion}
+            ------------------------------------
+            Fecha: ${eventoSeleccionado.Fecha || 'Sin fecha'}
+            Lugar: ${eventoSeleccionado.Lugar || 'Sin lugar'}
+            Bandas Participantes: ${bandasParticipantes}
+            ${multimediaHtml}
+        `);
+    }
+}
+
+function mostrarDetalleMultimedia(idMedia) {
+    const mediaSeleccionado = todoElMultimedia.find(item => item.ID_Media === idMedia);
+    if (mediaSeleccionado) {
+        let mediaContent = '';
+        if (mediaSeleccionado.Tipo === 'Foto' || mediaSeleccionado.Tipo === 'Afiche' || mediaSeleccionado.Tipo === 'Entrada') {
+            mediaContent = `<img src="${mediaSeleccionado.URL || 'placeholder.png'}" alt="${mediaSeleccionado.Descripcion || 'Imagen'}" style="max-width: 300px; max-height: 300px;">`;
+        } else if (mediaSeleccionado.Tipo === 'Audio') {
+            mediaContent = `<audio controls><source src="${mediaSeleccionado.URL || ''}" type="audio/mpeg"></audio>`;
+        } else if (mediaSeleccionado.Tipo === 'Video') {
+            const videoIdMatch = (mediaSeleccionado.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
+            const videoId = videoIdMatch ? videoIdMatch[1] : null;
+            if (videoId) {
+                mediaContent = `<iframe width="300" height="200" src="https://www.youtube.com/embed/${videoId}"
+                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
+                    </iframe>`;
             } else {
                 mediaContent = `<p>Error al cargar el video. URL no válida.</p>`;
             }
         }
 
+        let relacionadoCon = 'N/A';
+        if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
+            relacionadoCon = todasLasBandas.find(b => b.ID_Banda === mediaSeleccionado.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
+        } else if (mediaSeleccionado.Tipo_Relacion === 'Evento' && mediaSeleccionado.ID_Relacionado) {
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === mediaSeleccionado.ID_Relacionado)?.Descripcion || 'Evento Desconocido';
+        }
+
         alert(`
             Detalle de Contenido Multimedia
             ------------------------------
-            Descripción: ${mediaSeleccionado.Descripcion}
-            Tipo: ${mediaSeleccionado.Tipo}
+            Descripción: ${mediaSeleccionado.Descripcion || 'Sin descripción'}
+            Tipo: ${mediaSeleccionado.Tipo || 'N/A'}
             Relacionado con: ${relacionadoCon}
-            URL: ${mediaSeleccionado.URL}
+            URL: ${mediaSeleccionado.URL || 'N/A'}
 
             ${mediaContent}
         `);
     }
 }
+*/
 
 
 // =========================================================
@@ -463,6 +568,12 @@ function mostrarDetalleBanda(idBanda) {
 function inicializarSitio() {
     // Inicialmente, mostrar solo las primeras bandas
     currentFilteredBands = [...todasLasBandas]; // Al inicio, las bandas filtradas son todas las bandas
+    
+    const bandasGrid = document.getElementById('bandasGrid');
+    if (bandasGrid) {
+        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">Cargando bandas...</p>';
+    }
+
     loadMoreBands(); // Cargar el primer lote
 
     // Mostrar todos los eventos y multimedia (sin paginación por ahora)
@@ -471,37 +582,4 @@ function inicializarSitio() {
 }
 
 // Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
-document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
-
-
-Resumen de los Cambios Clave en script.js:
- * Variables de Paginación para Bandas (Sección 3):
-   * bandsPerPage: Cuántas bandas se mostrarán por lote (por defecto 20).
-   * currentBandIndex: Controla desde qué índice se cargan las bandas (se ha eliminado ya que usaremos displayedBandsCount).
-   * displayedBandsCount: Lleva la cuenta de cuántas bandas se han añadido al DOM.
-   * currentFilteredBands: Almacena la lista de bandas que se están mostrando actualmente (ya sea todas o las de un resultado de búsqueda). Esto es crucial para que la paginación funcione tanto con todas las bandas como con los resultados filtrados.
- * parseCsv mejorado:
-   * Añadido manejo para CSVs completamente vacíos o con solo encabezados para evitar errores.
- * createBandCardHTML y appendBandsToGrid (Sección 6):
-   * La lógica para construir la tarjeta HTML de una banda se ha extraído a createBandCardHTML para mayor limpieza.
-   * appendBandsToGrid ahora se encarga de añadir un array de bandas al DOM y de reasignar los eventListeners a los botones "Ver más" de las nuevas tarjetas.
- * loadMoreBands() (Sección 7):
-   * Esta es la nueva función principal para la paginación.
-   * Obtiene el siguiente lote de bandas de currentFilteredBands (o todasLasBandas si no hay filtro activo).
-   * Añade estas bandas al bandasGrid.
-   * Actualiza displayedBandsCount.
-   * Oculta el botón "Ver más" si ya se mostraron todas las bandas disponibles.
-   * Elimina el mensaje "Cargando bandas..." una vez que se muestra el primer lote.
- * Ajustes en mostrarBandas, mostrarEventos, mostrarMultimedia:
-   * Se eliminó el listaBandasDiv.innerHTML = ''; de mostrarBandas porque ahora loadMoreBands gestiona el borrado y la adición progresiva. (Se mantiene en Eventos y Multimedia ya que no tienen paginación).
-   * Se cambió la forma de asignar los eventListeners para los botones "Ver más" en mostrarBandas, mostrarEventos y mostrarMultimedia usando removeEventListener antes de addEventListener para evitar duplicados si la función se llama varias veces.
-   * La lógica de item.URL.split('v=')[1] para videos de YouTube se ha mejorado con una expresión regular para manejar más formatos de URL de YouTube y un null check.
- * Búsqueda (Sección 9):
-   * IDs de búsqueda separados: He ajustado los IDs de los inputs y botones de búsqueda para que el que está en la sección de Bandas (searchInputBands, searchButtonBands) sea diferente del global (searchInput, searchButton). Esto es importante para que el script pueda diferenciar qué búsqueda se está activando.
-   * realizarBusquedaBandas(texto): Esta nueva función se encarga de filtrar solo las bandas y luego llama a loadMoreBands() para mostrar los resultados, respetando la paginación.
-   * realizarBusquedaGlobal(texto): La función de búsqueda original ahora se centra en filtrar y mostrar todas las secciones (bandas, eventos, multimedia) de golpe, reseteando la paginación de bandas para mostrar los resultados relevantes. El botón "Ver más" se oculta en una búsqueda global, ya que se asume que se muestran todos los resultados de una vez.
- * handleVerMasClick: Se creó una función unificada para manejar todos los clics de botones "Ver más" y delegar la llamada a la función de detalle correcta.
- * inicializarSitio() (Sección 11):
-   * Ahora, al inicio, inicializarSitio llama a loadMoreBands() para cargar el primer lote de bandas y solo se llama a mostrarEventos y mostrarMultimedia directamente.
-Ahora, por favor, copia este código y reemplaza completamente el contenido de tu archivo script.js con él.
-Después de eso, asegúrate de que tu style.css tenga los estilos que te di en mi respuesta anterior para .load-more-container y el botón, para que se vea bien. Si no tienes esos estilos en tu style.css, por favor, indícamelo o envíame el contenido de tu style.css también.
+document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets)
