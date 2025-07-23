@@ -68,7 +68,6 @@ main {
 /* Estilos base para todas las secciones principales que usan .section-container */
 .section-container {
     width: 100%; /* La sección ocupará el 100% del ancho disponible en 'main' */
-    /* No se necesita max-width aquí, ya que main lo controla */
     margin: 40px auto; /* Centra la sección dentro de 'main' y le da espacio */
     padding: 30px; /* Padding interno para el contenido */
     background-color: #FFFFFF; /* Fondo blanco específico para la sección (si main no lo cubre siempre) */
@@ -292,7 +291,32 @@ footer {
 }
 
 /* =========================================================
-   8. Media Queries para Responsividad
+   8. Estilos para el botón "Ver más bandas"
+   ========================================================= */
+.load-more-container {
+    text-align: center; /* Centra el botón */
+    margin-top: 30px; /* Espacio superior para separar del grid */
+}
+
+.load-more-container #loadMoreBandsBtn { /* Específico para el botón de cargar más */
+    padding: 12px 25px;
+    font-size: 1.1em;
+    max-width: 200px; /* Limita el ancho del botón */
+    width: 100%; /* Permite que se ajuste en pantallas pequeñas */
+    background-color: #CC0000; /* Puedes usar tu color rojo principal */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.load-more-container #loadMoreBandsBtn:hover {
+    background-color: #a83f3f; /* Rojo más oscuro al pasar el mouse */
+}
+
+/* =========================================================
+   9. Media Queries para Responsividad
    ========================================================= */
 
 /* Para pantallas medianas y pequeñas (hasta 768px, tablets en vertical, etc.) */
