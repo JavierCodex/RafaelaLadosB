@@ -318,7 +318,7 @@ function realizarBusquedaBandas(texto) {
     currentFilteredBands = todasLasBandas.filter(banda =>
         (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
         (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) || // <-- Cambio aquí
+        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
             int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
@@ -350,7 +350,7 @@ function realizarBusquedaGlobal(texto) {
     currentFilteredBands = todasLasBandas.filter(banda =>
         (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
         (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) || // <-- Cambio aquí
+        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
             int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
@@ -409,28 +409,22 @@ function obtenerRecomendaciones(bandaId) {
 // =========================================================
 // 10. Funciones para mostrar detalles (requieren un modal o vista de detalle)
 // =========================================================
-// Esta es una versión simple. Lo ideal sería usar un modal (ventana emergente)
+// Esta es una versión simple que usa alert(). Lo ideal sería usar un modal (ventana emergente)
 // o llevar a una nueva página de detalle para cada elemento.
 function handleVerMasClick(event) {
     const id = event.target.dataset.id;
     const tipo = event.target.dataset.tipo;
 
-    // Puedes implementar un modal o redirección aquí
-    alert(`Se hizo clic en "Ver más" para ${tipo} con ID: ${id}. Aquí se abriría un modal o una página de detalle.`);
-    // Ejemplo de llamadas a funciones de detalle (a implementar en un modal real)
-    // if (tipo === 'banda') {
-    //     mostrarDetalleBanda(id);
-    // } else if (tipo === 'evento') {
-    //     mostrarDetalleEvento(id);
-    // } else if (tipo === 'multimedia') {
-    //     mostrarDetalleMultimedia(id);
-    // }
+    if (tipo === 'banda') {
+        mostrarDetalleBanda(id);
+    } else if (tipo === 'evento') {
+        mostrarDetalleEvento(id);
+    } else if (tipo === 'multimedia') {
+        mostrarDetalleMultimedia(id);
+    }
 }
 
-// Las siguientes funciones de detalle están comentadas o incompletas porque
-// requieren un modal o un sistema de visualización de detalles más robusto.
-// Se dejan como esqueleto para futura implementación.
-/*
+
 function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
     if (bandaSeleccionada) {
@@ -445,23 +439,18 @@ function mostrarDetalleBanda(idBanda) {
         const multimediaDeBanda = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
         );
-        let multimediaHtml = multimediaDeBanda.length > 0 ? '<h4>Multimedia relacionado:</h4>' : '';
+        let multimediaHtml = multimediaDeBanda.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         multimediaDeBanda.forEach(item => {
-            if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
-                multimediaHtml += `<p><img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" style="max-width: 100px; max-height: 100px;"> ${item.Descripcion || 'Sin descripción'}</p>`;
-            } else if (item.Tipo === 'Audio') {
-                multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <audio controls><source src="${item.URL || ''}" type="audio/mpeg"></audio></p>`;
-            } else if (item.Tipo === 'Video') {
+            let mediaLink = item.URL || 'N/A';
+            if (item.Tipo === 'Video') {
+                 // Para videos de YouTube, solo mostramos el enlace ya que no podemos incrustar en un alert
                  const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
                  const videoId = videoIdMatch ? videoIdMatch[1] : null;
                  if (videoId) {
-                     multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <iframe width="150" height="100" src="https://www.youtube.com/embed/${videoId}"
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                    </iframe>`;
-                } else {
-                    multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: Error al cargar el video. URL no válida.</p>`;
-                }
+                     mediaLink = `https://www.youtube.com/watch?v=${videoId}`;
+                 }
             }
+            multimediaHtml += `- ${item.Descripcion || 'Sin descripción'} (Tipo: ${item.Tipo || 'N/A'}): ${mediaLink}\n`;
         });
 
         alert(`
@@ -471,6 +460,7 @@ function mostrarDetalleBanda(idBanda) {
             Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}
             Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}
             Integrantes: ${nombresIntegrantes || 'No disponibles'}
+            
             Eventos Participados: ${nombresEventos || 'Ninguno'}
             ${multimediaHtml}
         `);
@@ -489,23 +479,17 @@ function mostrarDetalleEvento(idEvento) {
         const multimediaDeEvento = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Evento' && item.ID_Relacionado === eventoSeleccionado.ID_Evento
         );
-        let multimediaHtml = multimediaDeEvento.length > 0 ? '<h4>Multimedia relacionado:</h4>' : '';
+        let multimediaHtml = multimediaDeEvento.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         multimediaDeEvento.forEach(item => {
-            if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
-                multimediaHtml += `<p><img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" style="max-width: 100px; max-height: 100px;"> ${item.Descripcion || 'Sin descripción'}</p>`;
-            } else if (item.Tipo === 'Audio') {
-                multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <audio controls><source src="${item.URL || ''}" type="audio/mpeg"></audio></p>`;
-            } else if (item.Tipo === 'Video') {
+            let mediaLink = item.URL || 'N/A';
+            if (item.Tipo === 'Video') {
                  const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
                  const videoId = videoIdMatch ? videoIdMatch[1] : null;
                  if (videoId) {
-                     multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: <iframe width="150" height="100" src="https://www.youtube.com/embed/${videoId}"
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                    </iframe>`;
-                } else {
-                    multimediaHtml += `<p>${item.Descripcion || 'Sin descripción'}: Error al cargar el video. URL no válida.</p>`;
-                }
+                     mediaLink = `https://www.youtube.com/watch?v=${videoId}`;
+                 }
             }
+            multimediaHtml += `- ${item.Descripcion || 'Sin descripción'} (Tipo: ${item.Tipo || 'N/A'}): ${mediaLink}\n`;
         });
 
 
@@ -523,22 +507,25 @@ function mostrarDetalleEvento(idEvento) {
 function mostrarDetalleMultimedia(idMedia) {
     const mediaSeleccionado = todoElMultimedia.find(item => item.ID_Media === idMedia);
     if (mediaSeleccionado) {
-        let mediaContent = '';
-        if (mediaSeleccionado.Tipo === 'Foto' || mediaSeleccionado.Tipo === 'Afiche' || mediaSeleccionado.Tipo === 'Entrada') {
-            mediaContent = `<img src="${mediaSeleccionado.URL || 'placeholder.png'}" alt="${mediaSeleccionado.Descripcion || 'Imagen'}" style="max-width: 300px; max-height: 300px;">`;
-        } else if (mediaSeleccionado.Tipo === 'Audio') {
-            mediaContent = `<audio controls><source src="${mediaSeleccionado.URL || ''}" type="audio/mpeg"></audio>`;
-        } else if (mediaSeleccionado.Tipo === 'Video') {
-            const videoIdMatch = (mediaSeleccionado.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
-            const videoId = videoIdMatch ? videoIdMatch[1] : null;
-            if (videoId) {
-                mediaContent = `<iframe width="300" height="200" src="https://www.youtube.com/embed/${videoId}"
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                    </iframe>`;
-            } else {
-                mediaContent = `<p>Error al cargar el video. URL no válida.</p>`;
+        let mediaContent = ''; // Para mostrar el URL o ID del video/audio en el alert
+        if (mediaSeleccionado.URL) {
+            if (mediaSeleccionado.Tipo === 'Foto' || mediaSeleccionado.Tipo === 'Afiche' || mediaSeleccionado.Tipo === 'Entrada') {
+                mediaContent = `URL de la Imagen: ${mediaSeleccionado.URL}`;
+            } else if (mediaSeleccionado.Tipo === 'Audio') {
+                mediaContent = `URL del Audio: ${mediaSeleccionado.URL}`;
+            } else if (mediaSeleccionado.Tipo === 'Video') {
+                const videoIdMatch = (mediaSeleccionado.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
+                const videoId = videoIdMatch ? videoIdMatch[1] : null;
+                if (videoId) {
+                    mediaContent = `URL del Video de YouTube: https://www.youtube.com/watch?v=${videoId}`;
+                } else {
+                    mediaContent = `URL del Video (no YouTube): ${mediaSeleccionado.URL}`;
+                }
             }
+        } else {
+            mediaContent = 'URL no disponible.';
         }
+
 
         let relacionadoCon = 'N/A';
         if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
@@ -553,13 +540,10 @@ function mostrarDetalleMultimedia(idMedia) {
             Descripción: ${mediaSeleccionado.Descripcion || 'Sin descripción'}
             Tipo: ${mediaSeleccionado.Tipo || 'N/A'}
             Relacionado con: ${relacionadoCon}
-            URL: ${mediaSeleccionado.URL || 'N/A'}
-
             ${mediaContent}
         `);
     }
 }
-*/
 
 
 // =========================================================
@@ -582,4 +566,5 @@ function inicializarSitio() {
 }
 
 // Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
-document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets)
+document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
+
