@@ -581,3 +581,39 @@ function inicializarSitio() {
 
 // Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
 document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
+
+function mostrarDetalleBanda(idBanda) {
+    const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
+    if (bandaSeleccionada) {
+        console.log('DEBUG: Banda seleccionada:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda); // Nuevo log
+
+        const integrantesDeBanda = todosLosIntegrantes.filter(int => {
+            console.log('DEBUG: Procesando integrante:', int.Nombre_Integrante, 'ID_Banda del integrante:', int.ID_Banda); // Nuevo log
+            if (!int.ID_Banda) {
+                console.log('DEBUG: Integrante sin ID_Banda:', int.Nombre_Integrante); // Nuevo log
+                return false; 
+            }
+            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim());
+            console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Nuevo log
+            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
+            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Nuevo log
+            return isMatch;
+        });
+        
+        const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
+        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
+        
+        // ... (resto de la función alert) ...
+        alert(`
+            Detalle de Banda: ${bandaSeleccionada.Nombre_Banda}
+            -----------------------------------
+            Género: ${bandaSeleccionada.Genero || 'N/A'}
+            Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}
+            Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}
+            Integrantes: ${nombresIntegrantes || 'No disponibles'}
+            
+            Eventos Participados: ${nombresEventos || 'Ninguno'}
+            ${multimediaHtml}
+        `);
+    }
+}
