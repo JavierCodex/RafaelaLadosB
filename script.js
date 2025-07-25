@@ -458,15 +458,17 @@ function mostrarDetalleBanda(idBanda) {
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
         console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
 
+        // Declarar nombresEventos con const/let
         const eventosDeBanda = todosLosEventos.filter(evento =>
             evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
         );
         const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
 
+        // Declarar multimediaHtml con let
+        let multimediaHtml = multimediaDeBanda.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         const multimediaDeBanda = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
         );
-        let multimediaHtml = multimediaDeBanda.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         multimediaDeBanda.forEach(item => {
             let mediaLink = item.URL || 'N/A';
             if (item.Tipo === 'Video') {
@@ -558,7 +560,7 @@ function mostrarDetalleMultimedia(idMedia) {
         if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
             relacionadoCon = todasLasBandas.find(b => b.ID_Banda === mediaSeleccionado.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
         } else if (mediaSeleccionado.Tipo_Relacion === 'Evento' && mediaSeleccionado.ID_Relacionado) {
-            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion || 'Evento Desconocida';
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === mediaSeleccionado.ID_Relacionado)?.Descripcion || 'Evento Desconocida';
         }
 
         alert(`
