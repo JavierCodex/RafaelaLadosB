@@ -440,29 +440,31 @@ function handleVerMasClick(event) {
 function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
     if (bandaSeleccionada) {
-        console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda);
+        console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda); // Nuevo log
 
         const integrantesDeBanda = todosLosIntegrantes.filter(int => {
+            console.log('DEBUG: Procesando integrante:', int.Nombre_Integrante, 'ID_Banda del integrante RAW:', int.ID_Banda); // Nuevo log
             // Asegúrate de que int.ID_Banda exista y no esté vacío antes de intentar split
             if (!int.ID_Banda || int.ID_Banda.trim() === '') {
-                // console.log('DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false):', int.Nombre_Integrante); // Puedes descomentar para depurar
+                console.log('DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false):', int.Nombre_Integrante); // Nuevo log
                 return false;
             }
             const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim());
-            // console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Puedes descomentar para depurar
+            console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Nuevo log
             const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
-            // console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Puedes descomentar para depurar
+            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Nuevo log
             return isMatch;
         });
         
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
-        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes);
+        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
 
         const eventosDeBanda = todosLosEventos.filter(evento =>
             evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
         );
         const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
 
+        // Se corrigió el orden de declaración: multimediaDeBanda debe ir antes de multimediaHtml
         const multimediaDeBanda = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
         );
@@ -470,6 +472,7 @@ function mostrarDetalleBanda(idBanda) {
         multimediaDeBanda.forEach(item => {
             let mediaLink = item.URL || 'N/A';
             if (item.Tipo === 'Video') {
+                 // Para videos de YouTube, solo mostramos el enlace ya que no podemos incrustar en un alert
                  const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
                  const videoId = videoIdMatch ? videoIdMatch[1] : null;
                  if (videoId) {
