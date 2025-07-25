@@ -102,7 +102,12 @@ async function cargarDatosDesdeSheets() {
 // Función para crear el HTML de una tarjeta de banda
 function createBandCardHTML(banda) {
     const integrantesDeBanda = todosLosIntegrantes.filter(
-        integrante => integrante.ID_Banda === banda.ID_Banda
+        integrante => {
+            // Verifica que ID_Banda del integrante exista y sea una cadena
+            if (!integrante.ID_Banda) return false;
+            // Divide la cadena de IDs del integrante y busca si el ID de la banda está presente
+            return integrante.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda);
+        }
     );
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
@@ -320,7 +325,8 @@ function realizarBusquedaBandas(texto) {
         (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
         (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
-            int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
+            // Cambio importante aquí para la búsqueda también
+            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda)) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
 
@@ -352,7 +358,8 @@ function realizarBusquedaGlobal(texto) {
         (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
         (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
-            int.ID_Banda === banda.ID_Banda && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
+            // Cambio importante aquí para la búsqueda global
+            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda)) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
     const bandasGrid = document.getElementById('bandasGrid');
@@ -428,7 +435,14 @@ function handleVerMasClick(event) {
 function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
     if (bandaSeleccionada) {
-        const integrantesDeBanda = todosLosIntegrantes.filter(int => int.ID_Banda === bandaSeleccionada.ID_Banda);
+        // CAMBIO CRUCIAL AQUÍ: Modificación del filtro para integrantes
+        const integrantesDeBanda = todosLosIntegrantes.filter(int => {
+            // Asegurarse de que int.ID_Banda no es null/undefined antes de usar split
+            if (!int.ID_Banda) return false; 
+            // Divide la cadena de IDs del integrante (ej. "B07V, B080") en un array y busca el ID de la banda.
+            return int.ID_Banda.split(',').map(id => id.trim()).includes(bandaSeleccionada.ID_Banda);
+        });
+        
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
         const eventosDeBanda = todosLosEventos.filter(evento =>
@@ -567,4 +581,3 @@ function inicializarSitio() {
 
 // Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
 document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
-
