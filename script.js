@@ -420,7 +420,10 @@ function obtenerRecomendaciones(bandaId) {
 // o llevar a una nueva página de detalle para cada elemento.
 function handleVerMasClick(event) {
     const id = event.target.dataset.id;
-    const tipo = event.target.dataset.tipo;
+    // CORRECCIÓN CLAVE AQUÍ: debe ser .dataset.tipo
+    const tipo = event.target.dataset.tipo; 
+
+    console.log('DEBUG: Clic en "Ver más". ID:', id, 'Tipo:', tipo); // Añadido para depuración
 
     if (tipo === 'banda') {
         mostrarDetalleBanda(id);
@@ -428,6 +431,8 @@ function handleVerMasClick(event) {
         mostrarDetalleEvento(id);
     } else if (tipo === 'multimedia') {
         mostrarDetalleMultimedia(id);
+    } else {
+        console.warn('DEBUG: Tipo de elemento desconocido para Ver más:', tipo); // Advertencia si el tipo no coincide
     }
 }
 
@@ -435,15 +440,23 @@ function handleVerMasClick(event) {
 function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
     if (bandaSeleccionada) {
-        // CAMBIO CRUCIAL AQUÍ: Modificación del filtro para integrantes
+        console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda); // Nuevo log
+
         const integrantesDeBanda = todosLosIntegrantes.filter(int => {
-            // Asegurarse de que int.ID_Banda no es null/undefined antes de usar split
-            if (!int.ID_Banda) return false; 
-            // Divide la cadena de IDs del integrante (ej. "B07V, B080") en un array y busca el ID de la banda.
-            return int.ID_Banda.split(',').map(id => id.trim()).includes(bandaSeleccionada.ID_Banda);
+            console.log('DEBUG: Procesando integrante:', int.Nombre_Integrante, 'ID_Banda del integrante RAW:', int.ID_Banda); // Nuevo log
+            if (!int.ID_Banda) {
+                console.log('DEBUG: Integrante sin ID_Banda (return false):', int.Nombre_Integrante); // Nuevo log
+                return false; 
+            }
+            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim());
+            console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Nuevo log
+            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
+            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Nuevo log
+            return isMatch;
         });
         
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
+        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
 
         const eventosDeBanda = todosLosEventos.filter(evento =>
             evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
@@ -545,7 +558,7 @@ function mostrarDetalleMultimedia(idMedia) {
         if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
             relacionadoCon = todasLasBandas.find(b => b.ID_Banda === mediaSeleccionado.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
         } else if (mediaSeleccionado.Tipo_Relacion === 'Evento' && mediaSeleccionado.ID_Relacionado) {
-            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === mediaSeleccionado.ID_Relacionado)?.Descripcion || 'Evento Desconocido';
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion || 'Evento Desconocida';
         }
 
         alert(`
@@ -581,39 +594,3 @@ function inicializarSitio() {
 
 // Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
 document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
-
-function mostrarDetalleBanda(idBanda) {
-    const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
-    if (bandaSeleccionada) {
-        console.log('DEBUG: Banda seleccionada:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda); // Nuevo log
-
-        const integrantesDeBanda = todosLosIntegrantes.filter(int => {
-            console.log('DEBUG: Procesando integrante:', int.Nombre_Integrante, 'ID_Banda del integrante:', int.ID_Banda); // Nuevo log
-            if (!int.ID_Banda) {
-                console.log('DEBUG: Integrante sin ID_Banda:', int.Nombre_Integrante); // Nuevo log
-                return false; 
-            }
-            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim());
-            console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Nuevo log
-            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
-            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Nuevo log
-            return isMatch;
-        });
-        
-        const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
-        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
-        
-        // ... (resto de la función alert) ...
-        alert(`
-            Detalle de Banda: ${bandaSeleccionada.Nombre_Banda}
-            -----------------------------------
-            Género: ${bandaSeleccionada.Genero || 'N/A'}
-            Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}
-            Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}
-            Integrantes: ${nombresIntegrantes || 'No disponibles'}
-            
-            Eventos Participados: ${nombresEventos || 'Ninguno'}
-            ${multimediaHtml}
-        `);
-    }
-}
