@@ -2,7 +2,7 @@
 // 1. URLs de tus hojas de Google Sheets publicadas como CSV
 // =========================================================
 const URL_BANDAS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=481254535&single=true&output=csv';
-const URL_INTEGRANTES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMYuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=667742130&single=true&output=csv';
+const URL_INTEGRANTES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=667742130&single=true&output=csv';
 const URL_EVENTOS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=716304521&single=true&output=csv';
 const URL_MULTIMEDIA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=174575575&single=true&output=csv';
 
@@ -46,9 +46,9 @@ function parseCsv(csvText) {
             let value = values[j] !== undefined ? values[j].trim() : '';
 
             // Normalización agresiva para IDs específicos
-            if (headers[j] === 'ID_Banda' || headers[j] === 'Bandas_Participantes_IDs' || headers[j] === 'ID_Relacionado' || headers[j] === 'ID_Evento' || headers[j] === 'ID_Media') {
-                // Eliminar cualquier carácter no alfanumérico que no sea coma, y convertir a mayúsculas
-                // Esto ayuda a manejar posibles espacios invisibles o errores de tipografía
+            if (headers[j] === 'ID_Banda' || headers[j] === 'Bandas_Participantes_IDs' || headers[j] === 'ID_Relacionado') {
+                // Eliminar cualquier carácter no alfanumérico que no sea coma
+                // y convertir a mayúsculas para consistencia en la comparación
                 value = value.replace(/[^a-zA-Z0-9,]/g, '').toUpperCase();
             }
             row[headers[j]] = value;
@@ -460,8 +460,8 @@ function mostrarDetalleBanda(idBanda) {
     const bandaSeleccionada = todasLasBandas.find(banda => (banda.ID_Banda ? banda.ID_Banda.toUpperCase() : '') === idBandaNormalizado);
     
     // Declarar nombresEventos y multimediaHtml con un valor inicial antes del condicional
-    let nombresEventos = 'Ninguno'; // Se inicializa para evitar ReferenceError
-    let multimediaHtml = '';         // Se inicializa para evitar ReferenceError
+    let nombresEventos = 'Ninguno';
+    let multimediaHtml = '';
 
     if (bandaSeleccionada) {
         console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda);
