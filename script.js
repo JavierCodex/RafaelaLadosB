@@ -29,8 +29,8 @@ function parseCsv(csvText) {
     const lines = csvText.trim().split('\n');
     if (lines.length === 0) return []; // Manejar CSV vacío
     
-    // Filtra líneas vacías antes de procesar
-    const nonEmptyLines = lines.filter(line => line.trim() !== '');
+    // Filtra líneas vacías antes de procesar y normaliza saltos de línea
+    const nonEmptyLines = lines.filter(line => line.trim() !== '').map(line => line.replace(/\r/g, ''));
 
     if (nonEmptyLines.length < 2) { // Si solo hay encabezados o está completamente vacío
         return [];
@@ -106,7 +106,8 @@ function createBandCardHTML(banda) {
             // Verifica que ID_Banda del integrante exista y sea una cadena
             if (!integrante.ID_Banda) return false;
             // Divide la cadena de IDs del integrante y busca si el ID de la banda está presente
-            return integrante.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda);
+            // .replace(/\r/g, '') para eliminar posibles retornos de carro
+            return integrante.ID_Banda.replace(/\r/g, '').split(',').map(id => id.trim()).includes(banda.ID_Banda.replace(/\r/g, ''));
         }
     );
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
@@ -188,7 +189,7 @@ function mostrarEventos(eventosAMostrar) {
         // Asegúrate de que Bandas_Participantes_IDs sea una cadena antes de split
         const bandasParticipantes = (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.trim() !== '')
             ? evento.Bandas_Participantes_IDs.split(',').map(id => id.trim())
-                .map(bandaId => todasLasBandas.find(b => b.ID_Banda === bandaId)?.Nombre_Banda || 'Banda Desconocida')
+                .map(bandaId => todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === bandaId.replace(/\r/g, ''))?.Nombre_Banda || 'Banda Desconocida')
                 .join(', ')
             : 'No especificadas';
 
@@ -252,9 +253,9 @@ function mostrarMultimedia(multimediaAMostrar) {
         // Obtener la relación, añadiendo verificaciones para evitar errores
         let relacionadoCon = 'N/A';
         if (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado) {
-            relacionadoCon = todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
+            relacionadoCon = todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === item.ID_Relacionado.replace(/\r/g, ''))?.Nombre_Banda || 'Banda Desconocida';
         } else if (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado) {
-            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion || 'Evento Desconocido';
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento.replace(/\r/g, '') === item.ID_Relacionado.replace(/\r/g, ''))?.Descripcion || 'Evento Desconocido';
         }
        
         itemDiv.innerHTML = `
@@ -326,7 +327,7 @@ function realizarBusquedaBandas(texto) {
         (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
             // Cambio importante aquí para la búsqueda también
-            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda)) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
+            (int.ID_Banda && int.ID_Banda.replace(/\r/g, '').split(',').map(id => id.trim()).includes(banda.ID_Banda.replace(/\r/g, ''))) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
 
@@ -359,7 +360,7 @@ function realizarBusquedaGlobal(texto) {
         (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
         todosLosIntegrantes.some(int =>
             // Cambio importante aquí para la búsqueda global
-            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim()).includes(banda.ID_Banda)) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
+            (int.ID_Banda && int.ID_Banda.replace(/\r/g, '').split(',').map(id => id.trim()).includes(banda.ID_Banda.replace(/\r/g, ''))) && (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
         )
     );
     const bandasGrid = document.getElementById('bandasGrid');
@@ -376,8 +377,8 @@ function realizarBusquedaGlobal(texto) {
     const eventosFiltrados = todosLosEventos.filter(evento =>
         (evento.Descripcion && evento.Descripcion.toLowerCase().includes(textoNormalizado)) ||
         (evento.Lugar && evento.Lugar.toLowerCase().includes(textoNormalizado)) ||
-        (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').some(id => {
-            const banda = todasLasBandas.find(b => b.ID_Banda === id.trim());
+        (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.replace(/\r/g, '').split(',').some(id => {
+            const banda = todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === id.trim().replace(/\r/g, ''));
             return banda && (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado));
         }))
     );
@@ -388,8 +389,8 @@ function realizarBusquedaGlobal(texto) {
     const multimediaFiltrado = todoElMultimedia.filter(item =>
         (item.Descripcion && item.Descripcion.toLowerCase().includes(textoNormalizado)) ||
         (item.Tipo && item.Tipo.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado && todasLasBandas.find(b => b.ID_Banda === item.ID_Relacionado)?.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado && todosLosEventos.find(e => e.ID_Evento === item.ID_Relacionado)?.Descripcion.toLowerCase().includes(textoNormalizado))
+        (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado && todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === item.ID_Relacionado.replace(/\r/g, ''))?.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
+        (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado && todosLosEventos.find(e => e.ID_Evento.replace(/\r/g, '') === item.ID_Relacionado.replace(/\r/g, ''))?.Descripcion.toLowerCase().includes(textoNormalizado))
     );
     mostrarMultimedia(multimediaFiltrado);
 }
@@ -397,12 +398,12 @@ function realizarBusquedaGlobal(texto) {
 
 // Función de recomendación básica (puedes expandirla)
 function obtenerRecomendaciones(bandaId) {
-    const bandaBase = todasLasBandas.find(b => b.ID_Banda === bandaId);
+    const bandaBase = todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === bandaId.replace(/\r/g, ''));
     if (!bandaBase) return [];
 
     // Recomendaciones por género similar
     const recomendaciones = todasLasBandas.filter(b =>
-        b.ID_Banda !== bandaBase.ID_Banda && b.Genero === bandaBase.Genero
+        b.ID_Banda.replace(/\r/g, '') !== bandaBase.ID_Banda.replace(/\r/g, '') && b.Genero === bandaBase.Genero
     );
 
     // Aquí podrías añadir más lógica:
@@ -438,7 +439,8 @@ function handleVerMasClick(event) {
 
 
 function mostrarDetalleBanda(idBanda) {
-    const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda === idBanda);
+    // .replace(/\r/g, '') para asegurar la limpieza del ID de la banda seleccionada
+    const bandaSeleccionada = todasLasBandas.find(banda => banda.ID_Banda.replace(/\r/g, '') === idBanda.replace(/\r/g, ''));
     if (bandaSeleccionada) {
         console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda); // Nuevo log
 
@@ -449,24 +451,26 @@ function mostrarDetalleBanda(idBanda) {
                 console.log('DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false):', int.Nombre_Integrante); // Nuevo log
                 return false;
             }
-            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim());
+            // Añadir .replace(/\r/g, '') para cada ID al dividir y al comparar
+            const integranteBandasIDs = int.ID_Banda.replace(/\r/g, '').split(',').map(id => id.trim());
             console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs); // Nuevo log
-            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
-            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda + ') con el integrante?', isMatch); // Nuevo log
+            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda.replace(/\r/g, ''));
+            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda.replace(/\r/g, '') + ') con el integrante?', isMatch); // Nuevo log
             return isMatch;
         });
         
         const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
         console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes); // Nuevo log
+        console.log('DEBUG: Valor final de nombresIntegrantes para el alert:', nombresIntegrantes || 'No disponibles'); // ¡NUEVO LOG CRUCIAL!
 
         const eventosDeBanda = todosLosEventos.filter(evento =>
-            evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').includes(bandaSeleccionada.ID_Banda)
+            evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.replace(/\r/g, '').split(',').includes(bandaSeleccionada.ID_Banda.replace(/\r/g, ''))
         );
         const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
 
         // La declaración de multimediaDeBanda se movió aquí para que esté definida antes de usarse
         const multimediaDeBanda = todoElMultimedia.filter(item =>
-            item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
+            item.Tipo_Relacion === 'Banda' && item.ID_Relacionado.replace(/\r/g, '') === bandaSeleccionada.ID_Banda.replace(/\r/g, '')
         );
         let multimediaHtml = multimediaDeBanda.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         multimediaDeBanda.forEach(item => {
@@ -497,16 +501,16 @@ function mostrarDetalleBanda(idBanda) {
 }
 
 function mostrarDetalleEvento(idEvento) {
-    const eventoSeleccionado = todosLosEventos.find(evento => evento.ID_Evento === idEvento);
+    const eventoSeleccionado = todosLosEventos.find(evento => evento.ID_Evento.replace(/\r/g, '') === idEvento.replace(/\r/g, ''));
     if (eventoSeleccionado) {
         const bandasParticipantes = (eventoSeleccionado.Bandas_Participantes_IDs && eventoSeleccionado.Bandas_Participantes_IDs.trim() !== '')
-            ? eventoSeleccionado.Bandas_Participantes_IDs.split(',').map(id => id.trim())
-                .map(bandaId => todasLasBandas.find(b => b.ID_Banda === bandaId)?.Nombre_Banda || 'Banda Desconocida')
+            ? eventoSeleccionado.Bandas_Participantes_IDs.replace(/\r/g, '').split(',').map(id => id.trim())
+                .map(bandaId => todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === bandaId.replace(/\r/g, ''))?.Nombre_Banda || 'Banda Desconocida')
                 .join(', ')
             : 'No especificadas';
 
         const multimediaDeEvento = todoElMultimedia.filter(item =>
-            item.Tipo_Relacion === 'Evento' && item.ID_Relacionado === eventoSeleccionado.ID_Evento
+            item.Tipo_Relacion === 'Evento' && item.ID_Relacionado.replace(/\r/g, '') === eventoSeleccionado.ID_Evento.replace(/\r/g, '')
         );
         let multimediaHtml = multimediaDeEvento.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
         multimediaDeEvento.forEach(item => {
@@ -534,7 +538,7 @@ function mostrarDetalleEvento(idEvento) {
 }
 
 function mostrarDetalleMultimedia(idMedia) {
-    const mediaSeleccionado = todoElMultimedia.find(item => item.ID_Media === idMedia);
+    const mediaSeleccionado = todoElMultimedia.find(item => item.ID_Media.replace(/\r/g, '') === idMedia.replace(/\r/g, ''));
     if (mediaSeleccionado) {
         let mediaContent = ''; // Para mostrar el URL o ID del video/audio en el alert
         if (mediaSeleccionado.URL) {
@@ -558,9 +562,9 @@ function mostrarDetalleMultimedia(idMedia) {
 
         let relacionadoCon = 'N/A';
         if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
-            relacionadoCon = todasLasBandas.find(b => b.ID_Banda === mediaSeleccionado.ID_Relacionado)?.Nombre_Banda || 'Banda Desconocida';
+            relacionadoCon = todasLasBandas.find(b => b.ID_Banda.replace(/\r/g, '') === mediaSeleccionado.ID_Relacionado.replace(/\r/g, ''))?.Nombre_Banda || 'Banda Desconocida';
         } else if (mediaSeleccionado.Tipo_Relacion === 'Evento' && mediaSeleccionado.ID_Relacionado) {
-            relacionadoCon = todosLosEventos.find(e => e.ID_Evento === mediaSeleccionado.ID_Relacionado)?.Descripcion || 'Evento Desconocida';
+            relacionadoCon = todosLosEventos.find(e => e.ID_Evento.replace(/\r/g, '') === mediaSeleccionado.ID_Relacionado.replace(/\r/g, ''))?.Descripcion || 'Evento Desconocida';
         }
 
         alert(`
