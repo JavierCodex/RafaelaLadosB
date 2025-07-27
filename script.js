@@ -464,7 +464,7 @@ function mostrarDetalleBanda(idBanda) {
         );
         const nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
 
-        // Se corrigió el orden de declaración: multimediaDeBanda debe ir antes de multimediaHtml
+        // La declaración de multimediaDeBanda se movió aquí para que esté definida antes de usarse
         const multimediaDeBanda = todoElMultimedia.filter(item =>
             item.Tipo_Relacion === 'Banda' && item.ID_Relacionado === bandaSeleccionada.ID_Banda
         );
