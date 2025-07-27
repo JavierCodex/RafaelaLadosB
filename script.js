@@ -474,7 +474,9 @@ function mostrarDetalleBanda(idBanda) {
                 return false;
             }
             // Normalizar cada ID del integrante al dividir y antes de la comparación
-            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase());
+            const integranteBandasIDs = int.ID_Banda.split(',')
+                                        .map(id => id.trim().toUpperCase())
+                                        .filter(id => id !== ''); // <--- ¡Añadimos esta línea!
             console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs);
             
             const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase());
