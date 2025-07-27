@@ -3,8 +3,8 @@
 // =========================================================
 const URL_BANDAS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=481254535&single=true&output=csv';
 const URL_INTEGRANTES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMYuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=667742130&single=true&output=csv';
-const URL_EVENTOS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMYuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=716304521&single=true&output=csv';
-const URL_MULTIMEDIA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMYuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=174575575&single=true&output=csv';
+const URL_EVENTOS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=716304521&single=true&output=csv';
+const URL_MULTIMEDIA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=174575575&single=true&output=csv';
 
 // =========================================================
 // 2. Variables para almacenar los datos cargados
