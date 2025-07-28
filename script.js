@@ -126,14 +126,14 @@ integrantesDeBanda.forEach(int => {
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
     return `
-        <div class="banda-card">
-            <h3>${banda.Nombre_Banda}</h3>
-            <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
-            <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
-            ${nombresIntegrantes ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` : ''}
-            <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
-        </div>
-    `;
+  <div class="banda-card">
+    <h3>${banda.Nombre_Banda}</h3>
+    <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
+    <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
+    ${textoIntegrantes}
+    <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
+  </div>
+`;
 }
 
 // Muestra un lote de bandas en el grid
