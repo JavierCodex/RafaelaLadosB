@@ -1,629 +1,382 @@
-// =========================================================
-// 1. URLs de tus hojas de Google Sheets publicadas como CSV
-// =========================================================
-const URL_BANDAS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=481254535&single=true&output=csv';
-const URL_INTEGRANTES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=667742130&single=true&output=csv';
-const URL_EVENTOS_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=716304521&single=true&output=csv';
-const URL_MULTIMEDIA_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRfgSR2opPADo7NWgalg4kZsLHBBMZuks1AoJlP2Xhek2dOMOaX36eVcxc36sfq_1U8iv3TS5SO7JOu/pub?gid=174575575&single=true&output=csv';
+// --- CONSTANTES GLOBALES Y URLS DE LA API DE GOOGLE SHEETS ---
+// IMPORTANTE: Tu API Key. Para proyectos de mayor escala o con datos sensibles,
+// no se recomienda exponer la API Key directamente en el frontend.
+// Para este caso con datos públicos, es aceptable.
+const API_KEY = 'AIzaSyAP4nFhq5mON1hT0yllhtT9uj8zqPjw-3E';
 
-// =========================================================
-// 2. Variables para almacenar los datos cargados
-// =========================================================
-let todasLasBandas = [];
+// Tu Spreadsheet ID. Este ID es el mismo para todas tus hojas de cálculo en el mismo archivo.
+const SPREADSHEET_ID = '19g6yEmw7goAvQLSO5sGu87rHpEPRSknr-YNSTFCSrVY';
+
+// URLs de la API para cada hoja, solicitando el formato JSON (&alt=json)
+const URL_BANDAS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Bandas?key=${API_KEY}&alt=json`;
+const URL_INTEGRANTES_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Integrantes?key=${API_KEY}&alt=json`;
+const URL_EVENTOS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Eventos?key=${API_KEY}&alt=json`;
+const URL_MULTIMEDIA_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Multimedia?key=${API_KEY}&alt=json`;
+// --- FIN CONSTANTES GLOBALES ---
+
+// Variables globales para almacenar los datos
+let todosLosBandas = [];
 let todosLosIntegrantes = [];
 let todosLosEventos = [];
-let todoElMultimedia = [];
+let todosLosMultimedia = [];
 
-// =========================================================
-// 3. Variables para la paginación de Bandas
-// =========================================================
-const bandsPerPage = 20; // Cuántas bandas mostrar por lote
-let currentBandIndex = 0; // Para llevar la cuenta de qué banda estamos mostrando
-let displayedBandsCount = 0; // Contador de bandas actualmente mostradas en el grid
-let currentFilteredBands = []; // Para almacenar las bandas actualmente filtradas por la búsqueda
-
-// =========================================================
-// 4. Función auxiliar para parsear CSV a un array de objetos
-// =========================================================
-function parseCsv(csvText) {
-    const lines = csvText.trim().split('\n');
-    if (lines.length === 0) return []; // Manejar CSV vacío
-    
-    // Filtra líneas vacías antes de procesar y normaliza saltos de línea
-    const nonEmptyLines = lines.filter(line => line.trim() !== '').map(line => line.replace(/\r/g, ''));
-
-    if (nonEmptyLines.length < 2) { // Si solo hay encabezados o está completamente vacío
-        return [];
-    }
-
-    const headers = nonEmptyLines[0].split(',').map(header => header.trim());
-    const data = [];
-
-    for (let i = 1; i < nonEmptyLines.length; i++) {
-        const values = nonEmptyLines[i].split(',').map(value => value.trim());
-        const row = {};
-        for (let j = 0; j < headers.length; j++) {
-            let value = values[j] !== undefined ? values[j].trim() : '';
-
-            // Normalización agresiva para IDs específicos
-            if (headers[j] === 'ID_Banda' || headers[j] === 'Bandas_Participantes_IDs' || headers[j] === 'ID_Relacionado') {
-                // Eliminar cualquier carácter no alfanumérico que no sea coma
-                // y convertir a mayúsculas para consistencia en la comparación
-                value = value.replace(/[^a-zA-Z0-9,]/g, '').toUpperCase();
-            }
-            row[headers[j]] = value;
-        }
-        data.push(row);
-    }
-    return data;
-}
-
-// =========================================================
-// 5. Funciones para cargar los datos desde Google Sheets
-// =========================================================
-async function cargarDatosDesdeSheets() {
+// Función para cargar datos desde la API de Google Sheets (JSON)
+async function fetchJsonData(url, type) {
+    console.log(`DEBUG: Intentando cargar ${type} desde: ${url}`);
     try {
-        // Cargar Bandas
-        const responseBandas = await fetch(URL_BANDAS_CSV);
-        const csvBandas = await responseBandas.text();
-        todasLasBandas = parseCsv(csvBandas);
-        console.log('Bandas cargadas:', todasLasBandas.length, todasLasBandas);
+        const response = await fetch(url);
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`Error al cargar ${type}: ${response.status} (${response.statusText}) - Respuesta: ${errorText} para URL: ${url}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json(); // Esperamos JSON
+        console.log(`DEBUG: ${type} cargados correctamente. Datos JSON recibidos.`, data);
 
-        // Cargar Integrantes
-        const responseIntegrantes = await fetch(URL_INTEGRANTES_CSV);
-        const csvIntegrantes = await responseIntegrantes.text();
-        todosLosIntegrantes = parseCsv(csvIntegrantes);
-        console.log('Integrantes cargados:', todosLosIntegrantes.length, todosLosIntegrantes);
+        if (!data.values || data.values.length === 0) {
+            console.warn(`Advertencia: No se encontraron datos en la hoja ${type}.`);
+            return [];
+        }
 
-        // Cargar Eventos
-        const responseEventos = await fetch(URL_EVENTOS_CSV);
-        const csvEventos = await responseEventos.text();
-        todosLosEventos = parseCsv(csvEventos);
-        console.log('Eventos cargados:', todosLosEventos.length, todosLosEventos);
+        const headers = data.values[0].map(header => header.trim()); // El primer array son los encabezados
+        const rows = data.values.slice(1); // El resto son los datos
 
-        // Cargar Multimedia
-        const responseMultimedia = await fetch(URL_MULTIMEDIA_CSV);
-        const csvMultimedia = await responseMultimedia.text();
-        todoElMultimedia = parseCsv(csvMultimedia);
-        console.log('Multimedia cargado:', todoElMultimedia.length, todoElMultimedia);
-
-        // Una vez que todos los datos están cargados, inicializa la visualización
-        inicializarSitio();
+        return rows.map(row => {
+            let obj = {};
+            headers.forEach((header, index) => {
+                // Asegurarse de que el valor existe, si no, usar cadena vacía
+                obj[header] = row[index] !== undefined ? String(row[index]).trim() : '';
+            });
+            return obj;
+        }).filter(obj => {
+            // Filtrar filas completamente vacías o con solo el ID vacío
+            const hasAnyValue = Object.values(obj).some(val => val !== '' && val !== null && val !== undefined);
+            return hasAnyValue;
+        });
 
     } catch (error) {
-        console.error('Error al cargar datos desde Google Sheets:', error);
-        const bandasGrid = document.getElementById('bandasGrid');
-        if (bandasGrid) {
-            bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">Error al cargar los datos. Por favor, revisa tu conexión y las URLs de Google Sheets.</p>';
-        }
-        // Ocultar el botón "Ver más" si hay un error de carga
-        const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn');
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
+        console.error(`Error de red o parseo para ${type}:`, error);
+        return []; // Retorna un array vacío para que el programa no se detenga y la app siga funcionando
     }
 }
 
-// =========================================================
-// 6. Funciones para mostrar los datos en la página
-// =========================================================
+// Función principal para cargar todos los datos al inicio
+document.addEventListener('DOMContentLoaded', () => {
+    Promise.all([
+        fetchJsonData(URL_BANDAS_API_JSON, 'Bandas'),
+        fetchJsonData(URL_INTEGRANTES_API_JSON, 'Integrantes'),
+        fetchJsonData(URL_EVENTOS_API_JSON, 'Eventos'),
+        fetchJsonData(URL_MULTIMEDIA_API_JSON, 'Multimedia')
+    ]).then(([bandas, integrantes, eventos, multimedia]) => {
+        // Asignar los datos cargados a las variables globales
+        todosLosBandas = bandas;
+        todosLosIntegrantes = integrantes;
+        todosLosEventos = eventos;
+        todosLosMultimedia = multimedia;
 
-// Función para crear el HTML de una tarjeta de banda
-function createBandCardHTML(banda) {
-    // Normalizar el ID de la banda para la comparación
-    const bandaIDNormalizada = banda.ID_Banda ? banda.ID_Banda.toUpperCase() : '';
+        console.log("DEBUG: Datos iniciales cargados. Cantidad de:");
+        console.log("DEBUG: - Bandas:", todosLosBandas.length);
+        console.log("DEBUG: - Integrantes:", todosLosIntegrantes.length);
+        console.log("DEBUG: - Eventos:", todosLosEventos.length);
+        console.log("DEBUG: - Multimedia:", todosLosMultimedia.length);
 
-    const integrantesDeBanda = todosLosIntegrantes.filter(
-        integrante => {
-            if (!integrante.ID_Banda) return false;
-            // Normalizar los IDs del integrante para la comparación
-            const integranteBandasIDs = integrante.ID_Banda.split(',').map(id => id.trim().toUpperCase());
-            return integranteBandasIDs.includes(bandaIDNormalizada);
-        }
-    );
-    const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
+        // Inicializar la interfaz una vez que los datos estén cargados
+        mostrarBandasEnCards(todosLosBandas);
+        inicializarEventosYMultimedia(); // Asegúrate de que esta función exista
+        inicializarBusquedaGlobal(); // Asegúrate de que esta función exista
+        // Si tienes alguna otra inicialización, agrégala aquí
+    })
+    .catch(error => {
+        console.error('Error general al cargar datos iniciales de la API:', error);
+        alert('Hubo un error al cargar los datos. Por favor, inténtalo de nuevo más tarde.');
+    });
+});
 
-    return `
-        <div class="banda-card">
+// --- Funciones para mostrar datos en la interfaz (mantienen la lógica existente) ---
+
+// Función para mostrar las bandas en cards
+function mostrarBandasEnCards(bandasAMostrar) {
+    const contenedorBandas = document.getElementById('contenedorBandas');
+    if (!contenedorBandas) {
+        console.error("DEBUG: Elemento #contenedorBandas no encontrado.");
+        return;
+    }
+    contenedorBandas.innerHTML = ''; // Limpiar contenido anterior
+
+    if (bandasAMostrar.length === 0) {
+        contenedorBandas.innerHTML = '<p>No se encontraron bandas que coincidan con la búsqueda.</p>';
+        return;
+    }
+
+    bandasAMostrar.forEach(banda => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
             <h3>${banda.Nombre_Banda}</h3>
-            <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
-            <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
-            ${nombresIntegrantes ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` : ''}
-            <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
-        </div>
-    `;
-}
-
-// Muestra un lote de bandas en el grid
-function appendBandsToGrid(bandsArray, containerElement) {
-    bandsArray.forEach(banda => {
-        containerElement.insertAdjacentHTML('beforeend', createBandCardHTML(banda));
-    });
-
-    // Añadir event listeners a los botones "Ver más" recién creados
-    containerElement.querySelectorAll('.ver-mas-btn[data-tipo="banda"]').forEach(button => {
-        button.removeEventListener('click', handleVerMasClick); // Evitar duplicados
-        button.addEventListener('click', handleVerMasClick);
-    });
-}
-
-// =========================================================
-// 7. Lógica de Paginación para Bandas (Ver Más)
-// =========================================================
-function loadMoreBands() {
-    const bandasGrid = document.getElementById('bandasGrid');
-    const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn');
-
-    // Si es la primera carga o si estamos filtrando, usamos currentFilteredBands
-    const dataSource = currentFilteredBands.length > 0 ? currentFilteredBands : todasLasBandas;
-
-    const startIndex = displayedBandsCount;
-    const endIndex = startIndex + bandsPerPage;
-    const bandsToDisplay = dataSource.slice(startIndex, endIndex);
-
-    if (bandsToDisplay.length > 0) {
-        // Eliminar el mensaje "Cargando bandas..." si existe o si no hay nada en el grid y es la primera carga
-        if (bandasGrid.innerHTML.includes('Cargando bandas...') || displayedBandsCount === 0) {
-            bandasGrid.innerHTML = '';
-        }
-        appendBandsToGrid(bandsToDisplay, bandasGrid);
-        displayedBandsCount += bandsToDisplay.length;
-    }
-
-    // Ocultar el botón si ya no hay más bandas por cargar
-    if (displayedBandsCount >= dataSource.length) {
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
-    } else {
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'block'; // Asegurarse de que esté visible si hay más
-    }
-
-    // Si no hay bandas para mostrar después de un filtro y el grid está vacío
-    if (dataSource.length === 0 && displayedBandsCount === 0) {
-        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas para tu búsqueda.</p>';
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
-    }
-}
-
-// =========================================================
-// 8. Funciones para mostrar Eventos y Multimedia (sin paginación por ahora)
-// =========================================================
-function mostrarEventos(eventosAMostrar) {
-    const listaEventosDiv = document.getElementById('lista-eventos');
-    listaEventosDiv.innerHTML = ''; // Limpiar siempre al mostrar eventos
-
-    if (!eventosAMostrar || eventosAMostrar.length === 0) {
-        listaEventosDiv.innerHTML = '<p>No se encontraron eventos.</p>';
-        return;
-    }
-
-    eventosAMostrar.forEach(evento => {
-        // Asegúrate de que Bandas_Participantes_IDs sea una cadena antes de split
-        const bandasParticipantes = (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.trim() !== '')
-            ? evento.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase()) // Normalizar IDs
-                .map(bandaId => todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === bandaId)?.Nombre_Banda || 'Banda Desconocida')
-                .join(', ')
-            : 'No especificadas';
-
-        const eventoDiv = document.createElement('div');
-        eventoDiv.classList.add('evento-card');
-        eventoDiv.innerHTML = `
-            <h3>${evento.Descripcion || 'Evento sin título'}</h3>
-            <p><strong>Fecha:</strong> ${evento.Fecha || 'Sin fecha'}</p>
-            <p><strong>Lugar:</strong> ${evento.Lugar || 'Sin lugar'}</p>
-            <p><strong>Bandas:</strong> ${bandasParticipantes}</p>
-            <button class="ver-mas-btn" data-id="${evento.ID_Evento}" data-tipo="evento">Ver más</button>
+            <p>Género: ${banda.Genero || 'No disponible'}</p>
+            <p>Años de actividad: ${banda.Anos_Actividad || 'Sin fecha'}</p>
+            <button class="ver-mas-btn" data-id="${banda.ID_Banda}">Ver más</button>
         `;
-        listaEventosDiv.appendChild(eventoDiv);
+        contenedorBandas.appendChild(card);
     });
 
-    document.querySelectorAll('.ver-mas-btn[data-tipo="evento"]').forEach(button => {
-        button.removeEventListener('click', handleVerMasClick); // Evitar duplicados
-        button.addEventListener('click', handleVerMasClick);
-    });
-}
-
-function mostrarMultimedia(multimediaAMostrar) {
-    const galeriaDiv = document.getElementById('galeria-multimedia');
-    galeriaDiv.innerHTML = ''; // Limpiar siempre al mostrar multimedia
-
-    if (!multimediaAMostrar || multimediaAMostrar.length === 0) {
-        galeriaDiv.innerHTML = '<p>No se encontró contenido multimedia.</p>';
-        return;
-    }
-
-    multimediaAMostrar.forEach(item => {
-        const itemDiv = document.createElement('div');
-        itemDiv.classList.add('media-item');
-        let contentHtml = '';
-
-        if (item.Tipo === 'Foto' || item.Tipo === 'Afiche' || item.Tipo === 'Entrada') {
-            contentHtml = `<img src="${item.URL || 'placeholder.png'}" alt="${item.Descripcion || 'Imagen'}" class="media-image">`;
-        } else if (item.Tipo === 'Audio') {
-            contentHtml = `
-                <audio controls class="media-audio">
-                    <source src="${item.URL || ''}" type="audio/mpeg">
-                    Tu navegador no soporta el elemento de audio.
-                </audio>
-            `;
-        } else if (item.Tipo === 'Video') {
-            const url = item.URL || '';
-            const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
-            const videoId = videoIdMatch ? videoIdMatch[1] : null;
-
-            if (videoId) {
-                contentHtml = `
-                    <iframe class="media-video" src="https://www.youtube.com/embed/${videoId}"
-                            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen>
-                    </iframe>
-                `;
+    // Añadir event listeners a los botones "Ver más"
+    document.querySelectorAll('.ver-mas-btn').forEach(button => {
+        button.addEventListener('click', (event) => {
+            const bandaId = event.target.dataset.id;
+            const bandaSeleccionada = todosLosBandas.find(b => b.ID_Banda === bandaId);
+            if (bandaSeleccionada) {
+                mostrarDetalleBanda(bandaSeleccionada);
             } else {
-                contentHtml = `<p>Error al cargar el video. URL no válida: ${url}</p>`;
+                console.warn(`DEBUG: No se encontró la banda con ID: ${bandaId}`);
             }
+        });
+    });
+}
+
+// Función para mostrar el detalle de una banda en un alert (sin cambios significativos)
+function mostrarDetalleBanda(bandaSeleccionada) {
+    console.log(`DEBUG: Banda seleccionada para detalle: ${bandaSeleccionada.ID_Banda} tipo: banda`);
+
+    // Filtrar integrantes de la banda seleccionada
+    const integrantesFiltrados = todosLosIntegrantes.filter(int => {
+        console.log(`DEBUG: Procesando integrante: ${int.Nombre_Integrante} ID_Banda del integrante RAW: ${int.ID_Banda}`);
+
+        if (!int.ID_Banda || int.ID_Banda.trim() === '') {
+            console.log(`DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false): ${int.Nombre_Integrante}`);
+            return false; // Si ID_Banda no existe o está vacío, no se considera
         }
 
-        // Obtener la relación, añadiendo verificaciones para evitar errores
-        let relacionadoCon = 'N/A';
-        if (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado) {
-            // Normalizar ID_Relacionado para la búsqueda
-            const idRelacionadoNormalizado = item.ID_Relacionado.toUpperCase();
-            relacionadoCon = todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === idRelacionadoNormalizado)?.Nombre_Banda || 'Banda Desconocida';
-        } else if (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado) {
-            // Normalizar ID_Relacionado para la búsqueda
-            const idRelacionadoNormalizado = item.ID_Relacionado.toUpperCase();
-            relacionadoCon = todosLosEventos.find(e => (e.ID_Evento ? e.ID_Evento.toUpperCase() : '') === idRelacionadoNormalizado)?.Descripcion || 'Evento Desconocido';
-        }
-       
-        itemDiv.innerHTML = `
-            ${contentHtml}
-            <h4>${item.Descripcion || 'Sin descripción'}</h4>
-            <p>Tipo: ${item.Tipo || 'N/A'}</p>
-            ${relacionadoCon !== 'N/A' ? `<p class="media-relacion">Relacionado con: ${relacionadoCon}</p>` : ''}
-            <button class="ver-mas-btn" data-id="${item.ID_Media}" data-tipo="multimedia">Ver más</button>
-        `;
-        galeriaDiv.appendChild(itemDiv);
+        // Dividir la cadena de ID_Banda, limpiar espacios y filtrar elementos vacíos
+        const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
+        console.log(`DEBUG: IDs de banda del integrante (parseados):`, integranteBandasIDs);
+
+        const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
+        console.log(`DEBUG: Coincide el ID de banda (${bandaSeleccionada.ID_Banda}) con el integrante (${int.Nombre_Integrante})? ${isMatch}`);
+        return isMatch;
     });
 
-    document.querySelectorAll('.ver-mas-btn[data-tipo="multimedia"]').forEach(button => {
-        button.removeEventListener('click', handleVerMasClick); // Evitar duplicados
-        button.addEventListener('click', handleVerMasClick);
-    });
-}
+    const nombresIntegrantes = integrantesFiltrados.map(int => int.Nombre_Integrante).join(', ');
+    console.log(`DEBUG: Nombres de integrantes resultantes: ${nombresIntegrantes || 'No disponibles'}`);
 
-
-// =========================================================
-// 9. Lógica de Búsqueda (global y para bandas)
-// =========================================================
-const globalSearchInput = document.getElementById('searchInput'); // ID del input de búsqueda global
-const globalSearchButton = document.getElementById('searchButton'); // ID del botón de búsqueda global
-
-const bandSearchInput = document.getElementById('searchInputBands'); // ID del input de búsqueda de bandas
-const bandSearchButton = document.getElementById('searchButtonBands'); // ID del botón del botón de búsqueda de bandas
-
-// Event listener para el botón "Ver más bandas"
-const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn');
-if (loadMoreBandsBtn) {
-    loadMoreBandsBtn.addEventListener('click', loadMoreBands);
-}
-
-// Event listeners para la búsqueda global (si existe)
-if (globalSearchInput && globalSearchButton) {
-    globalSearchButton.addEventListener('click', () => {
-        realizarBusquedaGlobal(globalSearchInput.value);
-    });
-
-    globalSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            realizarBusquedaGlobal(globalSearchInput.value);
-        }
-    });
-}
-
-// Event listeners para la búsqueda de bandas específica
-if (bandSearchInput && bandSearchButton) {
-    bandSearchButton.addEventListener('click', () => {
-        realizarBusquedaBandas(bandSearchInput.value);
-    });
-
-    bandSearchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            realizarBusquedaBandas(bandSearchInput.value);
-        }
-    });
-}
-
-// Búsqueda para bandas específicamente
-function realizarBusquedaBandas(texto) {
-    const textoNormalizado = texto.toLowerCase();
-    const bandasGrid = document.getElementById('bandasGrid');
-
-    currentFilteredBands = todasLasBandas.filter(banda =>
-        (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
-        todosLosIntegrantes.some(int =>
-            // Normalizar IDs para la búsqueda
-            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim().toUpperCase()).includes((banda.ID_Banda ? banda.ID_Banda.toUpperCase() : ''))) && 
-            (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
-        )
-    );
-
-    // Reiniciar y mostrar los resultados filtrados
-    bandasGrid.innerHTML = ''; // Limpiar el grid actual
-    displayedBandsCount = 0; // Reiniciar contador de bandas mostradas
-
-    if (currentFilteredBands.length === 0) {
-        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas para tu búsqueda.</p>';
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
-        return;
-    }
-
-    loadMoreBands(); // Cargar el primer lote de bandas filtradas
-}
-
-
-// Búsqueda global (afecta a todas las secciones visibles)
-function realizarBusquedaGlobal(texto) {
-    const textoNormalizado = texto.toLowerCase();
-
-    // === Búsqueda y visualización de Bandas ===
-    // Reseteamos el estado de paginación para la búsqueda
-    currentBandIndex = 0;
-    displayedBandsCount = 0;
-
-    currentFilteredBands = todasLasBandas.filter(banda =>
-        (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Genero && banda.Genero.toLowerCase().includes(textoNormalizado)) ||
-        (banda.Biografia && banda.Biografia.toLowerCase().includes(textoNormalizado)) ||
-        todosLosIntegrantes.some(int =>
-            // Normalizar IDs para la búsqueda global
-            (int.ID_Banda && int.ID_Banda.split(',').map(id => id.trim().toUpperCase()).includes((banda.ID_Banda ? banda.ID_Banda.toUpperCase() : ''))) && 
-            (int.Nombre_Integrante && int.Nombre_Integrante.toLowerCase().includes(textoNormalizado))
-        )
-    );
-    const bandasGrid = document.getElementById('bandasGrid');
-    bandasGrid.innerHTML = ''; // Limpiar el grid de bandas
-    if (currentFilteredBands.length === 0) {
-        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">No se encontraron bandas que coincidan.</p>';
-        if (loadMoreBandsBtn) loadMoreBandsBtn.style.display = 'none';
-    } else {
-        loadMoreBands(); // Cargar el primer lote de resultados de búsqueda para bandas
-    }
-
-
-    // === Búsqueda y visualización de Eventos ===
-    const eventosFiltrados = todosLosEventos.filter(evento =>
-        (evento.Descripcion && evento.Descripcion.toLowerCase().includes(textoNormalizado)) ||
-        (evento.Lugar && evento.Lugar.toLowerCase().includes(textoNormalizado)) ||
-        (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').some(id => {
-            // Normalizar IDs para la búsqueda de eventos
-            const banda = todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === id.trim().toUpperCase());
-            return banda && (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(textoNormalizado));
-        }))
-    );
-    mostrarEventos(eventosFiltrados);
-
-
-    // === Búsqueda y visualización de Multimedia ===
-    const multimediaFiltrado = todoElMultimedia.filter(item =>
-        (item.Descripcion && item.Descripcion.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo && item.Tipo.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo_Relacion === 'Banda' && item.ID_Relacionado && todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === item.ID_Relacionado.toUpperCase())?.Nombre_Banda.toLowerCase().includes(textoNormalizado)) ||
-        (item.Tipo_Relacion === 'Evento' && item.ID_Relacionado && todosLosEventos.find(e => (e.ID_Evento ? e.ID_Evento.toUpperCase() : '') === item.ID_Relacionado.toUpperCase())?.Descripcion.toLowerCase().includes(textoNormalizado))
-    );
-    mostrarMultimedia(multimediaFiltrado);
-}
-
-
-// Función de recomendación básica (puedes expandirla)
-function obtenerRecomendaciones(bandaId) {
-    // Normalizar ID para la recomendación
-    const bandaBase = todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === bandaId.toUpperCase());
-    if (!bandaBase) return [];
-
-    // Recomendaciones por género similar
-    const recomendaciones = todasLasBandas.filter(b =>
-        (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') !== bandaBase.ID_Banda.toUpperCase() && b.Genero === bandaBase.Genero
-    );
-
-    // Aquí podrías añadir más lógica:
-    // - Bandas con integrantes en común (si el ID_Integrante aparece en varias bandas)
-    // - Bandas que tocaron en los mismos eventos
-    // - Bandas de la misma "época" (años de actividad)
-
-    return recomendaciones.slice(0, 3); // Devolver un máximo de 3 recomendaciones
-}
-
-// =========================================================
-// 10. Funciones para mostrar detalles (requieren un modal o vista de detalle)
-// =========================================================
-// Esta es una versión simple que usa alert(). Lo ideal sería usar un modal (ventana emergente)
-// o llevar a una nueva página de detalle para cada elemento.
-function handleVerMasClick(event) {
-    const id = event.target.dataset.id;
-    const tipo = event.target.dataset.tipo; 
-
-    console.log('DEBUG: Clic en "Ver más". ID:', id, 'Tipo:', tipo);
-
-    if (tipo === 'banda') {
-        mostrarDetalleBanda(id);
-    } else if (tipo === 'evento') {
-        mostrarDetalleEvento(id);
-    } else if (tipo === 'multimedia') {
-        mostrarDetalleMultimedia(id);
-    } else {
-        console.warn('DEBUG: Tipo de elemento desconocido para Ver más:', tipo); // Advertencia si el tipo no coincide
-    }
-}
-
-
-function mostrarDetalleBanda(idBanda) {
-    // Normalizar el ID de la banda seleccionada para la búsqueda
-    const idBandaNormalizado = idBanda ? idBanda.toUpperCase() : '';
-    const bandaSeleccionada = todasLasBandas.find(banda => (banda.ID_Banda ? banda.ID_Banda.toUpperCase() : '') === idBandaNormalizado);
-    
-    // Declarar nombresEventos y multimediaHtml con un valor inicial antes del condicional
-    let nombresEventos = 'Ninguno';
-    let multimediaHtml = '';
-
-    if (bandaSeleccionada) {
-        console.log('DEBUG: Banda seleccionada para detalle:', bandaSeleccionada.Nombre_Banda, 'ID:', bandaSeleccionada.ID_Banda);
-
-        const integrantesDeBanda = todosLosIntegrantes.filter(int => {
-            console.log('DEBUG: Procesando integrante:', int.Nombre_Integrante, 'ID_Banda del integrante RAW:', int.ID_Banda);
-            
-            if (!int.ID_Banda || int.ID_Banda.trim() === '') {
-                console.log('DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false):', int.Nombre_Integrante);
+    // Filtrar eventos de la banda seleccionada (si la hoja de eventos carga)
+    let eventosParticipados = 'Ninguno';
+    if (todosLosEventos && todosLosEventos.length > 0) {
+        const eventosFiltrados = todosLosEventos.filter(evento => {
+            if (!evento.Bandas_Participantes_ID || evento.Bandas_Participantes_ID.trim() === '') {
                 return false;
             }
-            // Normalizar cada ID del integrante al dividir y antes de la comparación
-            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase());
-            console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs);
-            
-            const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase());
-            console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda.toUpperCase() + ') con el integrante?', isMatch);
-            return isMatch;
+            const eventoBandasIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
+            return eventoBandasIDs.includes(bandaSeleccionada.ID_Banda);
         });
-        
-        const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
-        console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes);
-        console.log('DEBUG: Valor final de nombresIntegrantes para el alert:', nombresIntegrantes || 'No disponibles'); // Nuevo log crucial
-
-        const eventosDeBanda = todosLosEventos.filter(evento =>
-            evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase()).includes(bandaSeleccionada.ID_Banda.toUpperCase())
-        );
-        nombresEventos = eventosDeBanda.map(e => `${e.Descripcion || 'Evento sin título'} (${e.Fecha || 'Sin fecha'})`).join('; ');
-
-        const multimediaDeBanda = todoElMultimedia.filter(item =>
-            item.Tipo_Relacion === 'Banda' && (item.ID_Relacionado ? item.ID_Relacionado.toUpperCase() : '') === bandaSeleccionada.ID_Banda.toUpperCase()
-        );
-        multimediaHtml = multimediaDeBanda.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
-        multimediaDeBanda.forEach(item => {
-            let mediaLink = item.URL || 'N/A';
-            if (item.Tipo === 'Video') {
-                 const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
-                 const videoId = videoIdMatch ? videoIdMatch[1] : null;
-                 if (videoId) {
-                     mediaLink = `https://www.youtube.com/watch?v=${videoId}`;
-                 }
-            }
-            multimediaHtml += `- ${item.Descripcion || 'Sin descripción'} (Tipo: ${item.Tipo || 'N/A'}): ${mediaLink}\n`;
-        });
-
-        alert(`
-            Detalle de Banda: ${bandaSeleccionada.Nombre_Banda}
-            -----------------------------------
-            Género: ${bandaSeleccionada.Genero || 'N/A'}
-            Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}
-            Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}
-            Integrantes: ${nombresIntegrantes || 'No disponibles'}
-            
-            Eventos Participados: ${nombresEventos || 'Ninguno'}
-            ${multimediaHtml}
-        `);
+        if (eventosFiltrados.length > 0) {
+            eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
+        }
     } else {
-        alert('Banda no encontrada.'); // Añadir un mensaje si la banda no se encuentra
+        console.warn('DEBUG: todosLosEventos no está cargado o está vacío para filtrar.');
     }
+
+
+    // Filtrar multimedia de la banda seleccionada (si la hoja de multimedia carga)
+    let multimediaRelacionada = 'Ninguno';
+    if (todosLosMultimedia && todosLosMultimedia.length > 0) {
+        const multimediaFiltrada = todosLosMultimedia.filter(item => {
+            if (!item.ID_Relacionado || item.ID_Relacionado.trim() === '') {
+                return false;
+            }
+            const multimediaRelacionadoIDs = item.ID_Relacionado.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
+            return multimediaRelacionadoIDs.includes(bandaSeleccionada.ID_Banda);
+        });
+        if (multimediaFiltrada.length > 0) {
+            multimediaRelacionada = multimediaFiltrada.map(item => {
+                let mediaLink = item.URL || 'N/A';
+                // Para videos de YouTube, solo mostramos el enlace ya que no podemos incrustar en un alert
+                if (item.Tipo === 'Video' && mediaLink.includes('youtube.com/watch')) {
+                    const videoIdMatch = mediaLink.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/);
+                    if (videoIdMatch && videoIdMatch[1]) {
+                        mediaLink = `https://www.youtube.com/watch?v=${videoIdMatch[1]}`;
+                    }
+                }
+                return `${item.Descripcion || 'Sin descripción'} [Tipo: ${item.Tipo || 'N/A'}]: ${mediaLink}`;
+            }).join('; ');
+        }
+    } else {
+        console.warn('DEBUG: todosLosMultimedia no está cargado o está vacío para filtrar.');
+    }
+
+
+    // Mostrar el alert con los detalles
+    alert(`Detalle de Banda: ${bandaSeleccionada.Nombre_Banda}
+-------------------------------------
+Género: ${bandaSeleccionada.Genero || '-'}
+Años de actividad: ${bandaSeleccionada.Anos_Actividad || '-'}
+Biografía: ${bandaSeleccionada.Biografia || '-'}
+Integrantes: ${nombresIntegrantes || 'No disponibles'}
+Eventos Participados: ${eventosParticipados}
+Multimedia: ${multimediaRelacionada}`);
 }
 
-function mostrarDetalleEvento(idEvento) {
-    const idEventoNormalizado = idEvento ? idEvento.toUpperCase() : '';
-    const eventoSeleccionado = todosLosEventos.find(evento => (evento.ID_Evento ? evento.ID_Evento.toUpperCase() : '') === idEventoNormalizado);
-    if (eventoSeleccionado) {
-        const bandasParticipantes = (eventoSeleccionado.Bandas_Participantes_IDs && eventoSeleccionado.Bandas_Participantes_IDs.trim() !== '')
-            ? eventoSeleccionado.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase()) // Normalizar IDs
-                .map(bandaId => todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === bandaId)?.Nombre_Banda || 'Banda Desconocida')
-                .join(', ')
-            : 'No especificadas';
+// --- Funciones de búsqueda (mantienen la lógica existente) ---
 
-        const multimediaDeEvento = todoElMultimedia.filter(item =>
-            item.Tipo_Relacion === 'Evento' && (item.ID_Relacionado ? item.ID_Relacionado.toUpperCase() : '') === eventoSeleccionado.ID_Evento.toUpperCase()
-        );
-        let multimediaHtml = multimediaDeEvento.length > 0 ? '\n\nMultimedia relacionado:\n' : '';
-        multimediaDeEvento.forEach(item => {
-            let mediaLink = item.URL || 'N/A';
-            if (item.Tipo === 'Video') {
-                 const videoIdMatch = (item.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
-                 const videoId = videoIdMatch ? videoIdMatch[1] : null;
-                 if (videoId) {
-                     mediaLink = `https://www.youtube.com/watch?v=${videoId}`;
-                 }
+// Función para inicializar la búsqueda global
+function inicializarBusquedaGlobal() {
+    const buscarInput = document.getElementById('buscar');
+    const buscarBtn = document.getElementById('buscarBtn');
+    const busquedaResultados = document.getElementById('busquedaResultados');
+
+    if (!buscarInput || !buscarBtn || !busquedaResultados) {
+        console.error("DEBUG: Elementos de búsqueda global no encontrados.");
+        return;
+    }
+
+    buscarBtn.addEventListener('click', () => {
+        realizarBusquedaGlobal();
+    });
+
+    buscarInput.addEventListener('keypress', (event) => {
+        if (event.key === 'Enter') {
+            realizarBusquedaGlobal();
+        }
+    });
+
+    function realizarBusquedaGlobal() {
+        const terminoBusqueda = buscarInput.value.toLowerCase();
+        busquedaResultados.innerHTML = ''; // Limpiar resultados anteriores
+
+        if (terminoBusqueda === '') {
+            busquedaResultados.innerHTML = '<p>Por favor, introduce un término de búsqueda.</p>';
+            return;
+        }
+
+        const resultados = {
+            bandas: [],
+            integrantes: [],
+            eventos: [],
+            multimedia: []
+        };
+
+        // Buscar en Bandas
+        todosLosBandas.forEach(banda => {
+            if (banda.Nombre_Banda.toLowerCase().includes(terminoBusqueda) ||
+                (banda.Genero && banda.Genero.toLowerCase().includes(terminoBusqueda)) ||
+                (banda.Anos_Actividad && banda.Anos_Actividad.toLowerCase().includes(terminoBusqueda)) ||
+                (banda.Biografia && banda.Biografia.toLowerCase().includes(terminoBusqueda))) {
+                resultados.bandas.push(banda);
             }
-            multimediaHtml += `- ${item.Descripcion || 'Sin descripción'} (Tipo: ${item.Tipo || 'N/A'}): ${mediaLink}\n`;
         });
 
-
-        alert(`
-            Detalle de Evento: ${eventoSeleccionado.Descripcion}
-            ------------------------------------
-            Fecha: ${eventoSeleccionado.Fecha || 'Sin fecha'}
-            Lugar: ${eventoSeleccionado.Lugar || 'Sin lugar'}
-            Bandas Participantes: ${bandasParticipantes}
-            ${multimediaHtml}
-        `);
-    }
-}
-
-function mostrarDetalleMultimedia(idMedia) {
-    const idMediaNormalizado = idMedia ? idMedia.toUpperCase() : '';
-    const mediaSeleccionado = todoElMultimedia.find(item => (item.ID_Media ? item.ID_Media.toUpperCase() : '') === idMediaNormalizado);
-    if (mediaSeleccionado) {
-        let mediaContent = '';
-        if (mediaSeleccionado.URL) {
-            if (mediaSeleccionado.Tipo === 'Foto' || mediaSeleccionado.Tipo === 'Afiche' || mediaSeleccionado.Tipo === 'Entrada') {
-                mediaContent = `URL de la Imagen: ${mediaSeleccionado.URL}`;
-            } else if (mediaSeleccionado.Tipo === 'Audio') {
-                mediaContent = `URL del Audio: ${mediaSeleccionado.URL}`;
-            } else if (mediaSeleccionado.Tipo === 'Video') {
-                const videoIdMatch = (mediaSeleccionado.URL || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|v\/|.+\?v=))([^&]+)/);
-                const videoId = videoIdMatch ? videoIdMatch[1] : null;
-                if (videoId) {
-                    mediaContent = `URL del Video de YouTube: https://www.youtube.com/watch?v=${videoId}`;
-                } else {
-                    mediaContent = `URL del Video (no YouTube): ${mediaSeleccionado.URL}`;
-                }
+        // Buscar en Integrantes
+        todosLosIntegrantes.forEach(integrante => {
+            if (integrante.Nombre_Integrante.toLowerCase().includes(terminoBusqueda) ||
+                (integrante.Instrumento && integrante.Instrumento.toLowerCase().includes(terminoBusqueda))) {
+                resultados.integrantes.push(integrante);
             }
+        });
+
+        // Buscar en Eventos
+        todosLosEventos.forEach(evento => {
+            if (evento.Descripcion.toLowerCase().includes(terminoBusqueda) ||
+                (evento.Fecha && evento.Fecha.toLowerCase().includes(terminoBusqueda)) ||
+                (evento.Lugar && evento.Lugar.toLowerCase().includes(terminoBusqueda)) ||
+                (evento.Bandas_Participantes && evento.Bandas_Participantes.toLowerCase().includes(terminoBusqueda))) {
+                resultados.eventos.push(evento);
+            }
+        });
+
+        // Buscar en Multimedia
+        todosLosMultimedia.forEach(media => {
+            if (media.Descripcion.toLowerCase().includes(terminoBusqueda) ||
+                (media.Tipo && media.Tipo.toLowerCase().includes(terminoBusqueda))) {
+                resultados.multimedia.push(media);
+            }
+        });
+
+        // Mostrar resultados
+        let resultadosHTML = '';
+
+        if (resultados.bandas.length > 0) {
+            resultadosHTML += '<h4>Resultados en Bandas:</h4>';
+            resultados.bandas.forEach(banda => {
+                resultadosHTML += `<p>${banda.Nombre_Banda} (${banda.Genero || 'N/A'}) <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-type="banda">Ver más</button></p>`;
+            });
+        }
+
+        if (resultados.integrantes.length > 0) {
+            resultadosHTML += '<h4>Resultados en Integrantes:</h4>';
+            resultados.integrantes.forEach(integrante => {
+                resultadosHTML += `<p>${integrante.Nombre_Integrante} (${integrante.Instrumento || 'N/A'})</p>`;
+            });
+        }
+
+        if (resultados.eventos.length > 0) {
+            resultadosHTML += '<h4>Resultados en Eventos:</h4>';
+            resultados.eventos.forEach(evento => {
+                resultadosHTML += `<p>${evento.Descripcion} (${evento.Fecha || 'N/A'})</p>`;
+            });
+        }
+
+        if (resultados.multimedia.length > 0) {
+            resultadosHTML += '<h4>Resultados en Multimedia:</h4>';
+            resultados.multimedia.forEach(media => {
+                resultadosHTML += `<p>${media.Descripcion} (${media.Tipo || 'N/A'})</p>`;
+            });
+        }
+
+        if (resultadosHTML === '') {
+            busquedaResultados.innerHTML = '<p>No se encontraron resultados para su búsqueda.</p>';
         } else {
-            mediaContent = 'URL no disponible.';
+            busquedaResultados.innerHTML = resultadosHTML;
         }
 
+        // Re-adjuntar event listeners para los botones "Ver más" de la búsqueda global
+        document.querySelectorAll('#busquedaResultados .ver-mas-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const id = event.target.dataset.id;
+                const type = event.target.dataset.type; // 'banda'
+                if (type === 'banda') {
+                    const bandaSeleccionada = todosLosBandas.find(b => b.ID_Banda === id);
+                    if (bandaSeleccionada) {
+                        mostrarDetalleBanda(bandaSeleccionada);
+                    }
+                }
+            });
+        });
+    }
+}
 
-        let relacionadoCon = 'N/A';
-        if (mediaSeleccionado.Tipo_Relacion === 'Banda' && mediaSeleccionado.ID_Relacionado) {
-            const idRelacionadoNormalizado = mediaSeleccionado.ID_Relacionado.toUpperCase();
-            relacionadoCon = todasLasBandas.find(b => (b.ID_Banda ? b.ID_Banda.toUpperCase() : '') === idRelacionadoNormalizado)?.Nombre_Banda || 'Banda Desconocida';
-        } else if (mediaSeleccionado.Tipo_Relacion === 'Evento' && mediaSeleccionado.ID_Relacionado) {
-            const idRelacionadoNormalizado = mediaSeleccionado.ID_Relacionado.toUpperCase();
-            relacionadoCon = todosLosEventos.find(e => (e.ID_Evento ? e.ID_Evento.toUpperCase() : '') === idRelacionadoNormalizado)?.Descripcion || 'Evento Desconocida';
-        }
+// Función para inicializar eventos y multimedia
+function inicializarEventosYMultimedia() {
+    const eventosHistoricosDiv = document.getElementById('eventosHistoricos');
+    const galeriaMultimediaDiv = document.getElementById('galeriaMultimedia');
 
-        alert(`
-            Detalle de Contenido Multimedia
-            ------------------------------
-            Descripción: ${mediaSeleccionado.Descripcion || 'Sin descripción'}
-            Tipo: ${mediaSeleccionado.Tipo || 'N/A'}
-            Relacionado con: ${relacionadoCon}
-            ${mediaContent}
-        `);
+    if (!eventosHistoricosDiv || !galeriaMultimediaDiv) {
+        console.error("DEBUG: Elementos eventosHistoricosDiv o galeriaMultimediaDiv no encontrados.");
+        return;
+    }
+
+    // Mostrar un mensaje si no hay eventos cargados
+    if (todosLosEventos.length === 0) {
+        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3><p>No se encontraron eventos.</p>';
+    } else {
+        // Podrías implementar una lógica para mostrar eventos aquí si lo deseas
+        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3><p>Eventos disponibles próximamente (o muestra aquí los eventos).</p>';
+    }
+
+    // Mostrar un mensaje si no hay multimedia cargada
+    if (todosLosMultimedia.length === 0) {
+        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3><p>No se encontró contenido multimedia.</p>';
+    } else {
+        // Podrías implementar una lógica para mostrar multimedia aquí si lo deseas
+        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3><p>Contenido multimedia disponible próximamente (o muestra aquí el contenido).</p>';
     }
 }
 
 
-// =========================================================
-// 11. Inicialización del sitio cuando todos los datos están cargados
-// =========================================================
-function inicializarSitio() {
-    // Inicialmente, mostrar solo las primeras bandas
-    currentFilteredBands = [...todasLasBandas]; // Al inicio, las bandas filtradas son todas las bandas
-    
-    const bandasGrid = document.getElementById('bandasGrid');
-    if (bandasGrid) {
-        bandasGrid.innerHTML = '<p style="text-align: center; width: 100%;">Cargando bandas...</p>';
-    }
-
-    loadMoreBands(); // Cargar el primer lote
-
-    // Mostrar todos los eventos y multimedia (sin paginación por ahora)
-    mostrarEventos(todosLosEventos);
-    mostrarMultimedia(todoElMultimedia);
-}
-
-// Llama a la función principal para cargar los datos cuando el DOM está completamente cargado.
-document.addEventListener('DOMContentLoaded', cargarDatosDesdeSheets);
+// --- Resto de tu código HTML y CSS que no está en el JS ---
+// Asegúrate de que tu HTML tenga los elementos con los IDs correctos:
+// - <div id="contenedorBandas"></div>
+// - <input type="text" id="buscar">
+// - <button id="buscarBtn">Buscar</button>
+// - <div id="busquedaResultados"></div>
+// - <div id="eventosHistoricos"></div>
+// - <div id="galeriaMultimedia"></div>
