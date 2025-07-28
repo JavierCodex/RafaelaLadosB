@@ -119,6 +119,10 @@ function createBandCardHTML(banda) {
             return integranteBandasIDs.includes(bandaIDNormalizada);
         }
     );
+    console.log('🎸 Banda:', banda.Nombre_Banda, 'ID:', banda.ID_Banda);
+integrantesDeBanda.forEach(int => {
+  console.log('➡️ Integrante vinculado:', int.Nombre_Integrante, '→ ID_Banda:', int.ID_Banda);
+});
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
     return `
