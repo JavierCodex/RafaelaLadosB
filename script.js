@@ -492,9 +492,13 @@ function mostrarDetalleBanda(idBanda) {
   .map(int => int.Nombre_Integrante)
   .filter(nombre => nombre && nombre.trim() !== '')
   .join(', ');
-        const textoIntegrantes = nombresIntegrantes.length > 0 
+
+const textoIntegrantes = nombresIntegrantes.length > 0 
   ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` 
   : `<p><strong>Integrantes:</strong> No disponibles</p>`;
+
+
+        
         console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes);
         console.log('DEBUG: Valor final de nombresIntegrantes para el alert:', nombresIntegrantes || 'No disponibles'); // Nuevo log crucial
 
