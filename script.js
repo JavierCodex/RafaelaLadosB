@@ -138,6 +138,9 @@ function mostrarBandasEnCards(bandasAMostrar) {
 function mostrarDetalleBanda(bandaSeleccionada) {
     console.log(`DEBUG: Mostrar detalle para banda: ${bandaSeleccionada.Nombre_Banda} (ID: ${bandaSeleccionada.ID_Banda})`);
 
+    // Convertir el ID de la banda seleccionada a mayúsculas para una comparación consistente y segura
+    const bandaSeleccionadaID_Upper = bandaSeleccionada.ID_Banda.toUpperCase();
+
     // Filtrar integrantes de la banda seleccionada
     const integrantesFiltrados = todosLosIntegrantes.filter(int => {
         console.log(`DEBUG: Procesando integrante: ${int.Nombre_Integrante || 'N/A'} ID_Banda del integrante RAW: '${int.ID_Banda}'`);
@@ -151,8 +154,6 @@ function mostrarDetalleBanda(bandaSeleccionada) {
         const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
         console.log(`DEBUG: IDs de banda del integrante (parseados a MAYÚSCULAS y limpios):`, integranteBandasIDs);
 
-        // Convertir el ID de la banda seleccionada a mayúsculas para una comparación consistente
-        const bandaSeleccionadaID_Upper = bandaSeleccionada.ID_Banda.toUpperCase();
 
         const isMatch = integranteBandasIDs.includes(bandaSeleccionadaID_Upper);
         console.log(`DEBUG: Coincide el ID de banda de la banda seleccionada ('${bandaSeleccionadaID_Upper}') con el integrante ('${int.Nombre_Integrante}')? ${isMatch}`);
@@ -164,13 +165,13 @@ function mostrarDetalleBanda(bandaSeleccionada) {
 
     // Filtrar eventos de la banda seleccionada (si la hoja de eventos carga)
     let eventosParticipados = 'Ninguno';
-    if (todosLosEventos && todosLosEventos.length > 0) {
+    if (todosLosEventos && todosLosLosEventos.length > 0) {
         const eventosFiltrados = todosLosEventos.filter(evento => {
             if (!evento.Bandas_Participantes_ID || evento.Bandas_Participantes_ID.trim() === '') {
                 return false;
             }
             const eventoBandasIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return eventoBandasIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase()); // Asegurar mayúsculas aquí también
+            return eventoBandasIDs.includes(bandaSeleccionadaID_Upper); // Usar la versión en mayúsculas
         });
         if (eventosFiltrados.length > 0) {
             eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
@@ -188,7 +189,7 @@ function mostrarDetalleBanda(bandaSeleccionada) {
                 return false;
             }
             const multimediaRelacionadoIDs = item.ID_Relacionado.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return multimediaRelacionadoIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase()); // Asegurar mayúsculas aquí también
+            return multimediaRelacionadoIDs.includes(bandaSeleccionadaID_Upper); // Usar la versión en mayúsculas
         });
         if (multimediaFiltrada.length > 0) {
             multimediaRelacionada = multimediaFiltrada.map(item => {
