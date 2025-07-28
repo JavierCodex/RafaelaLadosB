@@ -44,13 +44,13 @@ async function fetchJsonData(url, type) {
         return rows.map(row => {
             let obj = {};
             headers.forEach((header, index) => {
-                // Asegurarse de que el valor existe, si no, usar cadena vacía
+                // Asegurarse de que el valor existe, si no, usar cadena vacía y limpiar espacios
                 obj[header] = row[index] !== undefined ? String(row[index]).trim() : '';
             });
             return obj;
         }).filter(obj => {
-            // Filtrar filas completamente vacías o con solo el ID vacío
-            const hasAnyValue = Object.values(obj).some(val => val !== '' && val !== null && val !== undefined);
+            // Filtrar filas completamente vacías (donde todos los valores son "")
+            const hasAnyValue = Object.values(obj).some(val => val !== '');
             return hasAnyValue;
         });
 
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// --- Funciones para mostrar datos en la interfaz (mantienen la lógica existente) ---
+// --- Funciones para mostrar datos en la interfaz ---
 
 // Función para mostrar las bandas en cards
 function mostrarBandasEnCards(bandasAMostrar) {
@@ -134,30 +134,33 @@ function mostrarBandasEnCards(bandasAMostrar) {
     });
 }
 
-// Función para mostrar el detalle de una banda en un alert (sin cambios significativos)
+// Función para mostrar el detalle de una banda en un alert
 function mostrarDetalleBanda(bandaSeleccionada) {
-    console.log(`DEBUG: Banda seleccionada para detalle: ${bandaSeleccionada.ID_Banda} tipo: banda`);
+    console.log(`DEBUG: Mostrar detalle para banda: ${bandaSeleccionada.Nombre_Banda} (ID: ${bandaSeleccionada.ID_Banda})`);
 
     // Filtrar integrantes de la banda seleccionada
     const integrantesFiltrados = todosLosIntegrantes.filter(int => {
-        console.log(`DEBUG: Procesando integrante: ${int.Nombre_Integrante} ID_Banda del integrante RAW: ${int.ID_Banda}`);
+        console.log(`DEBUG: Procesando integrante: ${int.Nombre_Integrante || 'N/A'} ID_Banda del integrante RAW: '${int.ID_Banda}'`);
 
         if (!int.ID_Banda || int.ID_Banda.trim() === '') {
-            console.log(`DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false): ${int.Nombre_Integrante}`);
-            return false; // Si ID_Banda no existe o está vacío, no se considera
+            console.log(`DEBUG: Integrante sin ID_Banda o ID_Banda vacío. Saltando: ${int.Nombre_Integrante}`);
+            return false;
         }
 
-        // Dividir la cadena de ID_Banda, limpiar espacios y filtrar elementos vacíos
+        // Dividir la cadena de ID_Banda, limpiar espacios, convertir a mayúsculas y filtrar elementos vacíos
         const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-        console.log(`DEBUG: IDs de banda del integrante (parseados):`, integranteBandasIDs);
+        console.log(`DEBUG: IDs de banda del integrante (parseados a MAYÚSCULAS y limpios):`, integranteBandasIDs);
 
-        const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
-        console.log(`DEBUG: Coincide el ID de banda (${bandaSeleccionada.ID_Banda}) con el integrante (${int.Nombre_Integrante})? ${isMatch}`);
+        // Convertir el ID de la banda seleccionada a mayúsculas para una comparación consistente
+        const bandaSeleccionadaID_Upper = bandaSeleccionada.ID_Banda.toUpperCase();
+
+        const isMatch = integranteBandasIDs.includes(bandaSeleccionadaID_Upper);
+        console.log(`DEBUG: Coincide el ID de banda de la banda seleccionada ('${bandaSeleccionadaID_Upper}') con el integrante ('${int.Nombre_Integrante}')? ${isMatch}`);
         return isMatch;
     });
 
     const nombresIntegrantes = integrantesFiltrados.map(int => int.Nombre_Integrante).join(', ');
-    console.log(`DEBUG: Nombres de integrantes resultantes: ${nombresIntegrantes || 'No disponibles'}`);
+    console.log(`DEBUG: Nombres de integrantes resultantes para el alert: ${nombresIntegrantes || 'No disponibles'}`);
 
     // Filtrar eventos de la banda seleccionada (si la hoja de eventos carga)
     let eventosParticipados = 'Ninguno';
@@ -167,7 +170,7 @@ function mostrarDetalleBanda(bandaSeleccionada) {
                 return false;
             }
             const eventoBandasIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return eventoBandasIDs.includes(bandaSeleccionada.ID_Banda);
+            return eventoBandasIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase()); // Asegurar mayúsculas aquí también
         });
         if (eventosFiltrados.length > 0) {
             eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
@@ -185,7 +188,7 @@ function mostrarDetalleBanda(bandaSeleccionada) {
                 return false;
             }
             const multimediaRelacionadoIDs = item.ID_Relacionado.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return multimediaRelacionadoIDs.includes(bandaSeleccionada.ID_Banda);
+            return multimediaRelacionadoIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase()); // Asegurar mayúsculas aquí también
         });
         if (multimediaFiltrada.length > 0) {
             multimediaRelacionada = multimediaFiltrada.map(item => {
@@ -216,7 +219,7 @@ Eventos Participados: ${eventosParticipados}
 Multimedia: ${multimediaRelacionada}`);
 }
 
-// --- Funciones de búsqueda (mantienen la lógica existente) ---
+// --- Funciones de búsqueda ---
 
 // Función para inicializar la búsqueda global
 function inicializarBusquedaGlobal() {
@@ -370,13 +373,3 @@ function inicializarEventosYMultimedia() {
         galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3><p>Contenido multimedia disponible próximamente (o muestra aquí el contenido).</p>';
     }
 }
-
-
-// --- Resto de tu código HTML y CSS que no está en el JS ---
-// Asegúrate de que tu HTML tenga los elementos con los IDs correctos:
-// - <div id="contenedorBandas"></div>
-// - <input type="text" id="buscar">
-// - <button id="buscarBtn">Buscar</button>
-// - <div id="busquedaResultados"></div>
-// - <div id="eventosHistoricos"></div>
-// - <div id="galeriaMultimedia"></div>
