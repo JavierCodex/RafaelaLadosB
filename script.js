@@ -119,29 +119,17 @@ function createBandCardHTML(banda) {
             return integranteBandasIDs.includes(bandaIDNormalizada);
         }
     );
-    console.log('🎸 Banda:', banda.Nombre_Banda, 'ID:', banda.ID_Banda);
-integrantesDeBanda.forEach(int => {
-  console.log('➡️ Integrante vinculado:', int.Nombre_Integrante, '→ ID_Banda:', int.ID_Banda);
-});
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
-    const nombresIntegrantes = integrantesDeBanda
-  .map(int => int.Nombre_Integrante)
-  .filter(nombre => nombre && nombre.trim() !== '')
-  .join(', ');
-        const textoIntegrantes = nombresIntegrantes.length > 0 
-  ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` 
-  : `<p><strong>Integrantes:</strong> No disponibles</p>`;
-
     return `
-  <div class="banda-card">
-    <h3>${banda.Nombre_Banda}</h3>
-    <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
-    <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
-    ${textoIntegrantes}
-    <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
-  </div>
-`;
+        <div class="banda-card">
+            <h3>${banda.Nombre_Banda}</h3>
+            <p><strong>Género:</strong> ${banda.Genero || 'N/A'}</p>
+            <p><strong>Años de actividad:</strong> ${banda.Anos_Actividad || 'Sin fecha'}</p>
+            ${nombresIntegrantes ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` : ''}
+            <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-tipo="banda">Ver más</button>
+        </div>
+    `;
 }
 
 // Muestra un lote de bandas en el grid
@@ -486,16 +474,15 @@ function mostrarDetalleBanda(idBanda) {
                 return false;
             }
             // Normalizar cada ID del integrante al dividir y antes de la comparación
-            const integranteBandasIDs = int.ID_Banda.split(',')
-                                        .map(id => id.trim().toUpperCase())
-                                        .filter(id => id !== ''); // <--- ¡Añadimos esta línea!
+            const integranteBandasIDs = int.ID_Banda.split(',').map(id => id.trim().toUpperCase());
             console.log('DEBUG: IDs de banda del integrante (parseados):', integranteBandasIDs);
             
             const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda.toUpperCase());
             console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda.toUpperCase() + ') con el integrante?', isMatch);
             return isMatch;
         });
-                     
+        
+        const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
         console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes);
         console.log('DEBUG: Valor final de nombresIntegrantes para el alert:', nombresIntegrantes || 'No disponibles'); // Nuevo log crucial
 
