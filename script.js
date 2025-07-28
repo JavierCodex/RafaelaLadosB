@@ -125,6 +125,14 @@ integrantesDeBanda.forEach(int => {
 });
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ');
 
+    const nombresIntegrantes = integrantesDeBanda
+  .map(int => int.Nombre_Integrante)
+  .filter(nombre => nombre && nombre.trim() !== '')
+  .join(', ');
+        const textoIntegrantes = nombresIntegrantes.length > 0 
+  ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` 
+  : `<p><strong>Integrantes:</strong> No disponibles</p>`;
+
     return `
   <div class="banda-card">
     <h3>${banda.Nombre_Banda}</h3>
@@ -487,18 +495,7 @@ function mostrarDetalleBanda(idBanda) {
             console.log('DEBUG: Coincide el ID de banda (' + bandaSeleccionada.ID_Banda.toUpperCase() + ') con el integrante?', isMatch);
             return isMatch;
         });
-        
-        const nombresIntegrantes = integrantesDeBanda
-  .map(int => int.Nombre_Integrante)
-  .filter(nombre => nombre && nombre.trim() !== '')
-  .join(', ');
-
-const textoIntegrantes = nombresIntegrantes.length > 0 
-  ? `<p><strong>Integrantes:</strong> ${nombresIntegrantes}</p>` 
-  : `<p><strong>Integrantes:</strong> No disponibles</p>`;
-
-
-        
+                     
         console.log('DEBUG: Nombres de integrantes resultantes:', nombresIntegrantes);
         console.log('DEBUG: Valor final de nombresIntegrantes para el alert:', nombresIntegrantes || 'No disponibles'); // Nuevo log crucial
 
