@@ -15,7 +15,7 @@
             <a href="#multimedia">GALERÍA</a>
             <a href="#libro">LIBRO</a>
             <a href="#contacto">CONTACTO</a>
-            </nav>
+        </nav>
     </header>
 
     <main>
@@ -28,44 +28,53 @@
         <section id="busqueda-y-filtros">
             <h2>Explorá el archivo</h2>
             <div class="search-container">
-                <input type="text" id="searchInput" placeholder="Buscar bandas, integrantes, eventos, generos...">
-                <button id="searchButton">Buscar</button>
+                <input type="text" id="buscar" placeholder="Buscar bandas, integrantes, eventos, generos...">
+                <button id="buscarBtn">Buscar</button>
             </div>
+            <div id="busquedaResultados" class="search-results-container">
+                </div>
         </section>
 
-        <section id="bandas" class="section-container"> <h2>Bandas</h2>
+        <section id="bandas" class="section-container">
+            <h2>Bandas</h2>
             <div class="search-container">
-                <input type="text" id="searchInputBands" placeholder="Buscar bandas..."> <button id="searchButtonBands">Buscar</button> </div>
+                <input type="text" id="buscarBandas" placeholder="Buscar bandas...">
+                <button id="buscarBandasBtn">Buscar</button>
+            </div>
 
-            <div class="grid-container" id="bandasGrid">
-                <p>Cargando bandas...</p> </div>
+            <div class="grid-container" id="contenedorBandas">
+                <p>Cargando bandas...</p>
+            </div>
 
             <div class="load-more-container">
                 <button id="loadMoreBandsBtn" class="ver-mas-btn">Ver más bandas</button>
             </div>
         </section>
 
-        <section id="eventos" class="section-container"> <h2>Eventos históricos</h2>
-            <div id="lista-eventos" class="grid-container">
+        <section id="eventos" class="section-container">
+            <h2>Eventos históricos</h2>
+            <div id="eventosHistoricos" class="grid-container">
                 <p>Eventos disponibles próximamente.</p>
             </div>
         </section>
 
-        <section id="multimedia" class="section-container"> <h2>Galería multimedia</h2>
-            <div id="galeria-multimedia" class="grid-container">
+        <section id="multimedia" class="section-container">
+            <h2>Galería multimedia</h2>
+            <div id="galeriaMultimedia" class="grid-container">
                 <p>Contenido multimedia disponible próximamente.</p>
             </div>
         </section>
 
         <section id="libro" class="section-container">
-            <h2>SEMBRAR UNA ISLA</h2> <h2>Crónicas del rock en Rafaela, 1965-1989</h2>
-                <p>“Sembrar una isla” fue el título elegido para nuestra ópera prima, refiriendo a la tarea de aquellos primeros pioneros locales que tomaron las riendas de la cultura joven de los años sesenta y que apostaron al cambio, tomando al rock como una herramienta de conquista, revolución y progreso frente al conservadurismo de una ciudad chica instalada en medio de la pampa gringa: la “isla” Rafaela.</p>
-                <p>Esta investigación se vuelve un elemento fundamental en la reconstrucción de una historia del rock provincial. Junto a proyectos como “65-75 Comarca Beat” (de Santa Fe) y “Generación Subterránea” (de Rosario) logra posicionar a la tercera ciudad de la provincia en el marco de procesos nacionales de gran trascendencia. El material empírico registrado nos permite desarrollar un punto de vista teórico sobre la conciencia generacional y la construcción de identidades subculturales vinculadas a la formación de una escena musical territorial.</p>
-                <p>Nuestra concepción del fenómeno musical es mucho más abarcativo que la música en sí misma. Supone entender imaginarios históricos, sentimientos de identidad y pertenencia, relaciones con otras músicas, estilos o géneros, valoraciones estéticas y opiniones.</p>
-                <p>Este libro de 200 páginas reconstruye la historia del surgimiento de los movimientos juveniles y la cultura rock en la ciudad de Rafaela entre 1965 y 1989 y presenta una narración cronológica articulada con datos de relevancia sobre el contexto histórico de la época y de la ciudad de Rafaela.</p>
-                <p>Ha sido declarado de interés provincial por la Cámara de Diputados de la Provincia de Santa Fe.</p>
-                <p>Descargá gratis el libro completo en formato PDF:</p>
-                <p><a href="https://drive.google.com/file/d/1gIPdwzKO445QMiX_NEC6Me9FJFBzkENg/view?usp=sharing" target="_blank" class="button">Descargar</a></p>
+            <h2>SEMBRAR UNA ISLA</h2>
+            <h2>Crónicas del rock en Rafaela, 1965-1989</h2>
+            <p>“Sembrar una isla” fue el título elegido para nuestra ópera prima, refiriendo a la tarea de aquellos primeros pioneros locales que tomaron las riendas de la cultura joven de los años sesenta y que apostaron al cambio, tomando al rock como una herramienta de conquista, revolución y progreso frente al conservadurismo de una ciudad chica instalada en medio de la pampa gringa: la “isla” Rafaela.</p>
+            <p>Esta investigación se vuelve un elemento fundamental en la reconstrucción de una historia del rock provincial. Junto a proyectos como “65-75 Comarca Beat” (de Santa Fe) y “Generación Subterránea” (de Rosario) logra posicionar a la tercera ciudad de la provincia en el marco de procesos nacionales de gran trascendencia. El material empírico registrado nos permite desarrollar un punto de vista teórico sobre la conciencia generacional y la construcción de identidades subculturales vinculadas a la formación de una escena musical territorial.</p>
+            <p>Nuestra concepción del fenómeno musical es mucho más abarcativo que la música en sí misma. Supone entender imaginarios históricos, sentimientos de identidad y pertenencia, relaciones con otras músicas, estilos o géneros, valoraciones estéticas y opiniones.</p>
+            <p>Este libro de 200 páginas reconstruye la historia del surgimiento de los movimientos juveniles y la cultura rock en la ciudad de Rafaela entre 1965 y 1989 y presenta una narración cronológica articulada con datos de relevancia sobre el contexto histórico de la época y de la ciudad de Rafaela.</p>
+            <p>Ha sido declarado de interés provincial por la Cámara de Diputados de la Provincia de Santa Fe.</p>
+            <p>Descargá gratis el libro completo en formato PDF:</p>
+            <p><a href="https://drive.google.com/file/d/1gIPdwzKO445QMiX_NEC6Me9FJFBzkENg/view?usp=sharing" target="_blank" class="button">Descargar</a></p>
         </section>
 
         <section id="contacto" class="section-container">
