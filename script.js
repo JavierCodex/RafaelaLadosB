@@ -82,9 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Inicializar la interfaz una vez que los datos estén cargados
         mostrarBandasEnCards(todosLosBandas);
-        inicializarEventosYMultimedia(); // Asegúrate de que esta función exista
-        inicializarBusquedaGlobal(); // Asegúrate de que esta función exista
-        // Si tienes alguna otra inicialización, agrégala aquí
+        inicializarEventosYMultimedia();
+        inicializarBusquedaGlobal();
     })
     .catch(error => {
         console.error('Error general al cargar datos iniciales de la API:', error);
@@ -138,8 +137,8 @@ function mostrarBandasEnCards(bandasAMostrar) {
 function mostrarDetalleBanda(bandaSeleccionada) {
     console.log(`DEBUG: Mostrar detalle para banda: ${bandaSeleccionada.Nombre_Banda} (ID: ${bandaSeleccionada.ID_Banda})`);
 
-    // Convertir el ID de la banda seleccionada a mayúsculas para una comparación consistente y segura
-    const bandaSeleccionadaID_Upper = bandaSeleccionada.ID_Banda.toUpperCase();
+    // Convertir el ID de la banda seleccionada a mayúsculas y limpiar espacios
+    const bandaSeleccionadaID_Upper = bandaSeleccionada.ID_Banda.trim().toUpperCase();
 
     // Filtrar integrantes de la banda seleccionada
     const integrantesFiltrados = todosLosIntegrantes.filter(int => {
@@ -164,14 +163,14 @@ function mostrarDetalleBanda(bandaSeleccionada) {
     console.log(`DEBUG: Nombres de integrantes resultantes para el alert: ${nombresIntegrantes || 'No disponibles'}`);
 
     // Filtrar eventos de la banda seleccionada
-    let eventosParticipados = 'Ninguno'; // Declaración con let
+    let eventosParticipados = 'Ninguno';
     if (todosLosEventos && todosLosEventos.length > 0) {
         const eventosFiltrados = todosLosEventos.filter(evento => {
             if (!evento.Bandas_Participantes_ID || evento.Bandas_Participantes_ID.trim() === '') {
                 return false;
             }
             const eventoBandasIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return eventoBandasIDs.includes(bandaSeleccionadaID_Upper); // Usar la versión en mayúsculas
+            return eventoBandasIDs.includes(bandaSeleccionadaID_Upper);
         });
         if (eventosFiltrados.length > 0) {
             eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
@@ -182,14 +181,14 @@ function mostrarDetalleBanda(bandaSeleccionada) {
 
 
     // Filtrar multimedia de la banda seleccionada
-    let multimediaRelacionada = 'Ninguno'; // Declaración con let
+    let multimediaRelacionada = 'Ninguno';
     if (todosLosMultimedia && todosLosMultimedia.length > 0) {
         const multimediaFiltrada = todosLosMultimedia.filter(item => {
             if (!item.ID_Relacionado || item.ID_Relacionado.trim() === '') {
                 return false;
             }
             const multimediaRelacionadoIDs = item.ID_Relacionado.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
-            return multimediaRelacionadoIDs.includes(bandaSeleccionadaID_Upper); // Usar la versión en mayúsculas
+            return multimediaRelacionadoIDs.includes(bandaSeleccionadaID_Upper);
         });
         if (multimediaFiltrada.length > 0) {
             multimediaRelacionada = multimediaFiltrada.map(item => {
@@ -327,4 +326,50 @@ function inicializarBusquedaGlobal() {
         }
 
         if (resultadosHTML === '') {
-            busquedaResultados.
+            busquedaResultados.innerHTML = '<p>No se encontraron resultados para su búsqueda.</p>';
+        } else {
+            busquedaResultados.innerHTML = resultadosHTML;
+        }
+
+        // Re-adjuntar event listeners para los botones "Ver más" de la búsqueda global
+        document.querySelectorAll('#busquedaResultados .ver-mas-btn').forEach(button => {
+            button.addEventListener('click', (event) => {
+                const id = event.target.dataset.id;
+                const type = event.target.dataset.type; // 'banda'
+                if (type === 'banda') {
+                    const bandaSeleccionada = todosLosBandas.find(b => b.ID_Banda === id);
+                    if (bandaSeleccionada) {
+                        mostrarDetalleBanda(bandaSeleccionada);
+                    }
+                }
+            });
+        });
+    }
+}
+
+// Función para inicializar eventos y multimedia
+function inicializarEventosYMultimedia() {
+    const eventosHistoricosDiv = document.getElementById('eventosHistoricos');
+    const galeriaMultimediaDiv = document.getElementById('galeriaMultimedia');
+
+    if (!eventosHistoricosDiv || !galeriaMultimediaDiv) {
+        console.error("DEBUG: Elementos eventosHistoricosDiv o galeriaMultimediaDiv no encontrados.");
+        return;
+    }
+
+    // Mostrar un mensaje si no hay eventos cargados
+    if (todosLosEventos.length === 0) {
+        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3><p>No se encontraron eventos.</p>';
+    } else {
+        // Podrías implementar una lógica para mostrar eventos aquí si lo deseas
+        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3><p>Eventos disponibles próximamente (o muestra aquí los eventos).</p>';
+    }
+
+    // Mostrar un mensaje si no hay multimedia cargada
+    if (todosLosMultimedia.length === 0) {
+        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3><p>No se encontró contenido multimedia.</p>';
+    } else {
+        // Podrías implementar una lógica para mostrar multimedia aquí si lo deseas
+        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3><p>Contenido multimedia disponible próximamente (o muestra aquí el contenido).</p>';
+    }
+}
