@@ -24,7 +24,7 @@ let todosLosEventos = [];
 let todosLosMultimedia = [];
 
 // Variables para paginación de Eventos y Multimedia
-const ITEMS_PER_PAGE = 10; // Cantidad de elementos a mostrar por cada "Ver más"
+const ITEMS_PER_PAGE = 5; // Cantidad de elementos a mostrar por cada "Ver más"
 let currentEventPage = 1;
 let currentMultimediaPage = 1;
 
