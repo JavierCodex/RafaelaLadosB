@@ -192,11 +192,8 @@ main {
 .accordion-container {
     width: 100%;
     margin: 20px auto;
-    /* Se quitan los bordes y sombras directas de aquí para que el grid se vea mejor */
-    /* border: 1px solid var(--color-medium-gray); */
-    /* border-radius: 8px; */
-    overflow: hidden;
-    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+    /* No hay bordes ni sombras directas aquí, se aplican a los elementos internos */
+    overflow: hidden; /* Para contener los elementos flotantes o con grid */
 }
 
 /* Contenedor del grid para los encabezados de las letras */
@@ -205,31 +202,29 @@ main {
     grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 5 columnas aprox, ajustable */
     gap: 10px; /* Espacio entre las "letras" */
     margin-bottom: 20px; /* Espacio antes del primer contenido de acordeón */
-}
-
-.accordion-item {
-    /* Cada item del acordeón (letra + contenido) */
-    border: 1px solid var(--color-medium-gray); /* Borde para cada item de acordeón */
+    border: 1px solid var(--color-medium-gray); /* Borde para el contenedor de letras */
     border-radius: 8px;
-    margin-bottom: 10px; /* Espacio entre los items del acordeón (para cuando está expandido) */
-    overflow: hidden; /* Asegura que el border-radius se aplique */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Sombra para cada item */
+    padding: 10px; /* Padding dentro del contenedor de letras */
+    background-color: var(--color-white); /* Fondo para el contenedor de letras */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* Encabezado de cada letra (se aplica el grid a estos elementos) */
+/* Encabezado de cada letra (las "celdas" de la cuadrícula) */
 .accordion-header {
     background-color: var(--color-black); /* Encabezado de la letra en negro */
     color: var(--color-white);
-    padding: 15px; /* Ajustado para el grid, era 18px 25px */
+    padding: 10px; /* Ajustado para el grid */
     cursor: pointer;
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Espacio entre letra y icono */
     align-items: center;
     transition: background-color 0.3s ease, color 0.3s ease;
     text-align: center; /* Centrar el texto de la letra */
     border-radius: 8px; /* Bordes redondeados para cada celda de la cuadrícula */
     height: 60px; /* Altura fija para que todas las "celdas" sean uniformes */
     box-sizing: border-box; /* Incluir padding y borde en la altura */
+    font-family: 'Roboto', sans-serif;
+    font-weight: 700;
 }
 
 .accordion-header:hover {
@@ -247,6 +242,7 @@ main {
     color: inherit; /* Hereda el color del padre (white o red) */
     font-weight: 700; /* Bold para el H3 del acordeón */
     flex-grow: 1; /* Permite que el h3 ocupe el espacio */
+    text-align: center; /* Asegura que la letra esté centrada */
 }
 
 .accordion-header::after {
@@ -263,10 +259,14 @@ main {
     transform: rotate(180deg);
 }
 
+/* Contenido del acordeón (se muestra debajo de la cuadrícula de letras) */
 .accordion-content {
     padding: 15px 20px; /* Ajustado para el contenido */
     background-color: var(--color-white); /* Contenido del acordeón en blanco */
-    border-top: 1px solid var(--color-medium-gray); /* Borde superior para separar del header */
+    border: 1px solid var(--color-medium-gray); /* Borde para el contenido */
+    border-radius: 8px;
+    margin-top: 10px; /* Espacio entre la cuadrícula de letras y el contenido */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
 /* Band Card Styles (within accordion-content) */
@@ -354,19 +354,81 @@ main {
     font-weight: 400;
 }
 
-.media-card img, .media-card iframe {
+/* Estilos específicos para miniaturas de video */
+.video-thumbnail-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio (height / width * 100) */
+    background-color: #000;
+    cursor: pointer;
+    margin-top: 15px;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.video-thumbnail-container img.video-thumbnail {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none; /* Quitar borde de imagen */
+}
+
+.video-thumbnail-container .play-button {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3em;
+    color: var(--color-white);
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none; /* Permite que el clic pase al contenedor */
+    transition: background-color 0.3s ease;
+}
+
+.video-thumbnail-container:hover .play-button {
+    background-color: rgba(255, 0, 0, 0.8); /* Rojo al pasar el ratón */
+}
+
+.media-card iframe {
     max-width: 100%;
-    height: auto;
+    height: 157px; /* Altura fija para iframes, puedes ajustar */
     display: block;
     margin-top: 15px;
     border-radius: 6px;
-    border: 1px solid var(--color-medium-gray); /* Borde para imágenes/videos */
+    border: 1px solid var(--color-medium-gray);
 }
 
-/* --- Load More Button (if still used for other sections, though not for bands now) --- */
-.load-more-container {
-    text-align: center;
-    margin-top: 25px;
+
+/* --- Load More Button (general style for paginated sections) --- */
+.load-more-btn { /* Estilo general para botones "Ver más" fuera de cards específicas */
+    display: block; /* Ocupa todo el ancho disponible */
+    width: fit-content; /* Se ajusta al contenido */
+    margin: 20px auto; /* Centrar el botón */
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-family: 'Roboto', sans-serif;
+}
+
+.load-more-btn:hover {
+    background-color: var(--color-dark-red);
+    transform: translateY(-2px);
 }
 
 .button { /* Estilo para el botón de descarga del libro */
