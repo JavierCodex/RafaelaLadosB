@@ -563,14 +563,16 @@ function renderEvents(startIndex, endIndex) {
     const fragment = document.createDocumentFragment();
     for (let i = startIndex; i < endIndex; i++) {
         const evento = todosLosEventos[i];
-        if (!evento) continue; // Saltar si el evento no existe (ej. por datos inconsistentes)
+        if (!evento) continue;
+
+        console.log("DEBUG: Renderizando evento:", evento); // Log the full event object
 
         const eventoCard = document.createElement('div');
         eventoCard.classList.add('event-card');
 
         // Procesar las bandas participantes para hacerlas clicables
         let bandasHtml = 'N/A';
-        if (evento.Bandas_Participantes_ID) {
+        if (evento.Bandas_Participantes_ID) { // Use the correct field name from your sheet
             const bandaIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase());
             const bandasEncontradas = todosLosBandas.filter(banda => banda.ID_Banda && bandaIDs.includes(banda.ID_Banda.trim().toUpperCase()));
             
@@ -589,6 +591,25 @@ function renderEvents(startIndex, endIndex) {
         `;
         fragment.appendChild(eventoCard);
     }
+    
+    const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
+    if (loadMoreBtn) {
+        eventosHistoricosDiv.insertBefore(fragment, loadMoreBtn);
+    } else {
+        eventosHistoricosDiv.appendChild(fragment);
+    }
+
+    // Añadir event listeners a los enlaces de bandas recién creados
+    fragment.querySelectorAll('.event-band-link').forEach(span => {
+        span.addEventListener('click', (e) => {
+            const bandId = e.target.dataset.bandId;
+            const banda = todosLosBandas.find(b => b.ID_Banda === bandId);
+            if (banda) {
+                mostrarDetalleBanda(banda);
+            }
+        });
+    });
+}
     
     // Añadir al contenedor de eventos, pero antes del botón "Ver más" si existe
     const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
