@@ -249,17 +249,17 @@ function mostrarDetalleBanda(bandaSeleccionada) {
     let eventosParticipados = 'Ninguno';
     if (todosLosEventos && todosLosEventos.length > 0) {
         const eventosFiltrados = todosLosEventos.filter(evento => {
-            // Asumiendo que el campo en tu hoja de Eventos para el ID de banda es 'Bandas_Participantes_ID'
+            // Asumiendo que el campo en tu hoja de Eventos para el ID de banda es 'Bandas_Participantes_IDs'
             // Asegúrate de que el nombre del campo sea correcto en tu hoja
-            if (!evento.Bandas_Participantes_ID || evento.Bandas_Participantes_ID.trim() === '') {
+            if (!evento.Bandas_Participantes_IDs || evento.Bandas_Participantes_IDs.trim() === '') {
                 return false;
             }
-            const eventoBandasIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
+            const eventoBandasIDs = evento.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase()).filter(id => id !== '');
             return eventoBandasIDs.includes(bandaSeleccionadaID_Upper);
         });
         if (eventosFiltrados.length > 0) {
-            // Asumiendo que los campos en tu hoja de Eventos son 'Descripción' y 'Fecha'
-            eventosParticipados = eventosFiltrados.map(e => `${e.Descripción || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
+            // Asumiendo que los campos en tu hoja de Eventos son 'Descripcion' y 'Fecha'
+            eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
         }
     } else {
         console.warn('DEBUG: todosLosEventos no está cargado o está vacío para filtrar.');
@@ -282,14 +282,14 @@ function mostrarDetalleBanda(bandaSeleccionada) {
             multimediaRelacionada = multimediaFiltrada.map(item => {
                 let mediaLink = item.URL || 'N/A';
                 // Para videos de YouTube, solo mostramos el enlace ya que no podemos incrustar en un alert
-                // Asumiendo que los campos en tu hoja de Multimedia son 'Descripción' y 'Tipo_Relacion'
+                // Asumiendo que los campos en tu hoja de Multimedia son 'Descripcion' y 'Tipo_Relacion'
                 if (item.Tipo_Relacion && item.Tipo_Relacion.toUpperCase().includes('VIDEO') && mediaLink.includes('youtube.com/watch')) {
                     const videoIdMatch = mediaLink.match(/(?:youtu\.be\/|youtube\.com\/watch\?v=)([a-zA-Z0-9_-]+)/);
                     if (videoIdMatch && videoIdMatch[1]) {
                         mediaLink = `https://www.youtube.com/watch?v=${videoIdMatch[1]}`;
                     }
                 }
-                return `${item.Descripción || 'Sin descripción'} [Tipo: ${item.Tipo_Relacion || 'N/A'}]: ${mediaLink}`;
+                return `${item.Descripcion || 'Sin descripción'} [Tipo: ${item.Tipo_Relacion || 'N/A'}]: ${mediaLink}`;
             }).join('; ');
         }
     } else {
@@ -384,19 +384,19 @@ function realizarBusquedaGlobal() {
     }
 
 
-    // Buscar en Eventos (usando 'Descripción' y 'Lugar' como campos de búsqueda)
+    // Buscar en Eventos (usando 'Descripcion' y 'Lugar' como campos de búsqueda)
     todosLosEventos.forEach(evento => {
-        if (evento.Descripción && evento.Descripción.toLowerCase().includes(terminoBusqueda) ||
+        if (evento.Descripcion && evento.Descripcion.toLowerCase().includes(terminoBusqueda) ||
             (evento.Fecha && evento.Fecha.toLowerCase().includes(terminoBusqueda)) ||
             (evento.Lugar && evento.Lugar.toLowerCase().includes(terminoBusqueda)) ||
-            (evento.Bandas_Participantes_ID && evento.Bandas_Participantes_ID.toLowerCase().includes(terminoBusqueda))) { // Puedes ajustar este campo si no existe
+            (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.toLowerCase().includes(terminoBusqueda))) { // Puedes ajustar este campo si no existe
             resultados.eventos.push(evento);
         }
     });
 
-    // Buscar en Multimedia (usando 'Descripción' y 'Tipo_Relacion' como campos de búsqueda)
+    // Buscar en Multimedia (usando 'Descripcion' y 'Tipo_Relacion' como campos de búsqueda)
     todosLosMultimedia.forEach(media => {
-        if (media.Descripción && media.Descripción.toLowerCase().includes(terminoBusqueda) ||
+        if (media.Descripcion && media.Descripcion.toLowerCase().includes(terminoBusqueda) ||
             (media.Tipo_Relacion && media.Tipo_Relacion.toLowerCase().includes(terminoBusqueda))) {
             resultados.multimedia.push(media);
         }
@@ -434,7 +434,7 @@ function realizarBusquedaGlobal() {
     if (resultados.eventos.length > 0) {
         resultadosHTML += '<h4>Resultados en Eventos:</h4>';
         resultados.eventos.forEach(evento => {
-            resultadosHTML += `<p>${evento.Descripción} (${evento.Fecha || 'N/A'})</p>`;
+            resultadosHTML += `<p>${evento.Descripcion} (${evento.Fecha || 'N/A'})</p>`;
         });
         foundAnyResult = true;
     }
@@ -442,7 +442,7 @@ function realizarBusquedaGlobal() {
     if (resultados.multimedia.length > 0) {
         resultadosHTML += '<h4>Resultados en Multimedia:</h4>';
         resultados.multimedia.forEach(media => {
-            resultadosHTML += `<p>${media.Descripción} (${media.Tipo_Relacion || 'N/A'})</p>`;
+            resultadosHTML += `<p>${media.Descripcion} (${media.Tipo_Relacion || 'N/A'})</p>`;
         });
         foundAnyResult = true;
     }
@@ -576,8 +576,8 @@ function renderEvents(startIndex, endIndex) {
 
         // Procesar las bandas participantes para hacerlas clicables
         let bandasHtml = 'N/A';
-        if (evento.Bandas_Participantes_ID) { // Usa el nombre de columna exacto de tu hoja
-            const bandaIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase());
+        if (evento.Bandas_Participantes_IDs) { // Usa el nombre de columna exacto de tu hoja
+            const bandaIDs = evento.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase());
             const bandasEncontradas = todosLosBandas.filter(banda => banda.ID_Banda && bandaIDs.includes(banda.ID_Banda.trim().toUpperCase()));
             
             if (bandasEncontradas.length > 0) {
@@ -602,7 +602,7 @@ function renderEvents(startIndex, endIndex) {
         }
 
         eventoCard.innerHTML = `
-            <h4>${evento.Descripción || 'Evento sin título'}</h4>
+            <h4>${evento.Descripcion || 'Evento sin título'}</h4>
             <p>Fecha: ${evento.Fecha || 'Sin fecha'}</p>
             <p>Lugar: ${evento.Lugar || 'Desconocido'}</p>
             <p>Bandas: ${bandasHtml}</p>
@@ -634,13 +634,13 @@ function renderMultimedia(startIndex, endIndex) {
         const mediaCard = document.createElement('div');
         mediaCard.classList.add('media-card');
         
-        // Solo el nombre dado en Descripción
-        let mediaContentHTML = `<h4>${item.Descripción || 'Contenido sin título'}</h4>`; 
+        // Solo el nombre dado en Descripcion
+        let mediaContentHTML = `<h4>${item.Descripcion || 'Contenido sin título'}</h4>`; 
 
         if (item.URL && item.Tipo_Relacion) {
             const type = item.Tipo_Relacion.toUpperCase();
             if (type === 'IMAGEN') {
-                mediaContentHTML += `<img src="${item.URL}" alt="${item.Descripción || 'Imagen'}" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Imagen';" style="max-width: 100%; height: auto;">`;
+                mediaContentHTML += `<img src="${item.URL}" alt="${item.Descripcion || 'Imagen'}" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Imagen';" style="max-width: 100%; height: auto;">`;
             } else if (type.includes('VIDEO')) {
                 // Extraer ID de YouTube si es posible y usar un iframe para incrustar
                 const youtubeMatch = item.URL.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
@@ -651,7 +651,7 @@ function renderMultimedia(startIndex, endIndex) {
                     
                     mediaContentHTML += `
                         <div class="video-thumbnail-container">
-                            <img src="${thumbnailUrl}" alt="Miniatura de ${item.Descripción || 'video'}" class="video-thumbnail" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Video';" data-video-id="${videoId}">
+                            <img src="${thumbnailUrl}" alt="Miniatura de ${item.Descripcion || 'video'}" class="video-thumbnail" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Video';" data-video-id="${videoId}">
                             <div class="play-button">&#9658;</div>
                         </div>
                     `;
