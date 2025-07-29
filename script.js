@@ -249,8 +249,7 @@ function mostrarDetalleBanda(bandaSeleccionada) {
     let eventosParticipados = 'Ninguno';
     if (todosLosEventos && todosLosEventos.length > 0) {
         const eventosFiltrados = todosLosEventos.filter(evento => {
-            // Asumiendo que el campo en tu hoja de Eventos para el ID de banda es 'Bandas_Participantes_IDs'
-            // Asegúrate de que el nombre del campo sea correcto en tu hoja
+            // Usar el nombre de columna exacto de tu hoja: 'Bandas_Participantes_IDs'
             if (!evento.Bandas_Participantes_IDs || evento.Bandas_Participantes_IDs.trim() === '') {
                 return false;
             }
@@ -258,7 +257,7 @@ function mostrarDetalleBanda(bandaSeleccionada) {
             return eventoBandasIDs.includes(bandaSeleccionadaID_Upper);
         });
         if (eventosFiltrados.length > 0) {
-            // Asumiendo que los campos en tu hoja de Eventos son 'Descripcion' y 'Fecha'
+            // Usar el nombre de columna exacto de tu hoja: 'Descripcion'
             eventosParticipados = eventosFiltrados.map(e => `${e.Descripcion || 'Sin descripción'} [${e.Fecha || 'Sin fecha'}]`).join('; ');
         }
     } else {
@@ -389,7 +388,7 @@ function realizarBusquedaGlobal() {
         if (evento.Descripcion && evento.Descripcion.toLowerCase().includes(terminoBusqueda) ||
             (evento.Fecha && evento.Fecha.toLowerCase().includes(terminoBusqueda)) ||
             (evento.Lugar && evento.Lugar.toLowerCase().includes(terminoBusqueda)) ||
-            (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.toLowerCase().includes(terminoBusqueda))) { // Puedes ajustar este campo si no existe
+            (evento.Bandas_Participantes_IDs && evento.Bandas_Participantes_IDs.toLowerCase().includes(terminoBusqueda))) {
             resultados.eventos.push(evento);
         }
     });
@@ -473,6 +472,7 @@ function realizarBusquedaGlobal() {
 function inicializarEventosYMultimedia() {
     // Eventos
     if (eventosHistoricosDiv) {
+        // eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3>'; // COMENTADO: El título h2 ya está en index.html
         const totalEvents = todosLosEventos.length;
         
         // Limpiar solo los eventos renderizados previamente (no el título h3)
@@ -506,7 +506,13 @@ function inicializarEventosYMultimedia() {
                 }
             });
         } else if (totalEvents === 0) {
-            eventosHistoricosDiv.innerHTML += '<p>No se encontraron eventos.</p>';
+            // Asegurarse de que el mensaje "No se encontraron eventos" solo se muestre una vez
+            if (!eventosHistoricosDiv.querySelector('p.no-events-found')) {
+                const noEventsMessage = document.createElement('p');
+                noEventsMessage.classList.add('no-events-found');
+                noEventsMessage.textContent = 'No se encontraron eventos.';
+                eventosHistoricosDiv.appendChild(noEventsMessage);
+            }
         }
         console.log("DEBUG: Eventos históricos inicializados con paginación.");
     } else {
@@ -515,6 +521,7 @@ function inicializarEventosYMultimedia() {
 
     // Multimedia
     if (galeriaMultimediaDiv) {
+        // galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3>'; // COMENTADO: El título h2 ya está en index.html
         const totalMultimedia = todosLosMultimedia.length;
         
         // Limpiar solo los elementos multimedia renderizados previamente (no el título h3)
@@ -548,7 +555,13 @@ function inicializarEventosYMultimedia() {
                 }
             });
         } else if (totalMultimedia === 0) {
-            galeriaMultimediaDiv.innerHTML += '<p>No se encontró contenido multimedia.</p>';
+            // Asegurarse de que el mensaje "No se encontró contenido multimedia" solo se muestre una vez
+            if (!galeriaMultimediaDiv.querySelector('p.no-multimedia-found')) {
+                const noMultimediaMessage = document.createElement('p');
+                noMultimediaMessage.classList.add('no-multimedia-found');
+                noMultimediaMessage.textContent = 'No se encontró contenido multimedia.';
+                galeriaMultimediaDiv.appendChild(noMultimediaMessage);
+            }
         }
         console.log("DEBUG: Galería multimedia inicializada con paginación.");
     } else {
@@ -574,7 +587,8 @@ function renderEvents(startIndex, endIndex) {
 
         // Procesar las bandas participantes para hacerlas clicables
         let bandasHtml = 'N/A';
-        if (evento.Bandas_Participantes_IDs) { // Usa el nombre de columna exacto de tu hoja
+        // Usar el nombre de columna exacto de tu hoja: 'Bandas_Participantes_IDs'
+        if (evento.Bandas_Participantes_IDs) { 
             const bandaIDs = evento.Bandas_Participantes_IDs.split(',').map(id => id.trim().toUpperCase());
             const bandasEncontradas = todosLosBandas.filter(banda => banda.ID_Banda && bandaIDs.includes(banda.ID_Banda.trim().toUpperCase()));
             
@@ -600,7 +614,7 @@ function renderEvents(startIndex, endIndex) {
         }
 
         eventoCard.innerHTML = `
-            <h4>${evento.Descripcion || 'Evento sin título'}</h4>
+            <h4>${evento.Descripcion || 'Evento sin título'}</h4> <!-- Corregido a 'Descripcion' -->
             <p>Fecha: ${evento.Fecha || 'Sin fecha'}</p>
             <p>Lugar: ${evento.Lugar || 'Desconocido'}</p>
             <p>Bandas: ${bandasHtml}</p>
@@ -615,7 +629,6 @@ function renderEvents(startIndex, endIndex) {
     } else {
         eventosHistoricosDiv.appendChild(fragment);
     }
-    // NOTA: Ya no necesitamos fragment.querySelectorAll aquí porque los listeners se adjuntan al crear los spans.
 }
 
 /**
@@ -633,7 +646,7 @@ function renderMultimedia(startIndex, endIndex) {
         mediaCard.classList.add('media-card');
         
         // Solo el nombre dado en Descripcion
-        let mediaContentHTML = `<h4>${item.Descripcion || 'Contenido sin título'}</h4>`; 
+        let mediaContentHTML = `<h4>${item.Descripcion || 'Contenido sin título'}</h4>`; // Corregido a 'Descripcion'
 
         if (item.URL && item.Tipo_Relacion) {
             const type = item.Tipo_Relacion.toUpperCase();
