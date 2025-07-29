@@ -9,9 +9,15 @@
     --color-dark-gray: #444444;   /* Un gris oscuro para texto en fondos claros */
 }
 
+/* --- Importar fuentes de Google Fonts --- */
+/* Montserrat es una excelente alternativa a Tw Cen MT */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap');
+/* Puedes añadir otra si quieres un contraste para el texto del cuerpo, ej. 'Open Sans', 'Lato' */
+
+
 /* --- Estilos Generales y Reset --- */
 body {
-    font-family: 'Arial', sans-serif; /* Puedes cambiar por una fuente más rockera si deseas, ej. 'Montserrat', 'Open Sans', 'Roboto Condensed' */
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente principal */
     margin: 0;
     padding: 0;
     background-color: var(--color-light-gray);
@@ -36,35 +42,37 @@ a:hover {
     margin: 25px auto;
     background-color: var(--color-white);
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más definida */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     max-width: 960px;
-    border: 1px solid var(--color-medium-gray); /* Borde sutil */
+    border: 1px solid var(--color-medium-gray);
 }
 
 h1, h2, h3, h4 {
-    color: var(--color-black); /* Títulos en negro por defecto */
+    color: var(--color-black);
     margin-top: 0;
     margin-bottom: 15px;
-    font-family: 'Arial Black', sans-serif; /* Fuente impactante para títulos, puedes importar otras */
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para títulos */
     text-transform: uppercase;
     letter-spacing: 1px;
+    font-weight: 700; /* Negrita para títulos, puedes usar 900 para aún más impacto */
 }
 
 /* --- Header --- */
 header {
-    background-color: var(--color-black); /* Fondo negro para el header */
+    background-color: var(--color-black);
     color: var(--color-white);
-    padding: 1.5rem 0; /* Más padding vertical */
+    padding: 1.5rem 0;
     text-align: center;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); /* Sombra más oscura */
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
 }
 
 header h1 {
     margin: 0;
-    font-size: 3em; /* Tamaño grande para el título principal */
-    color: var(--color-primary-red); /* Título principal en rojo */
+    font-size: 3em;
+    color: var(--color-primary-red);
     letter-spacing: 3px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra de texto */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    font-weight: 900; /* Extra negrita para el título principal */
 }
 
 header nav {
@@ -74,7 +82,7 @@ header nav {
 header nav a {
     color: var(--color-white);
     text-decoration: none;
-    padding: 0.7rem 1.5rem; /* Más padding para los enlaces de navegación */
+    padding: 0.7rem 1.5rem;
     display: inline-block;
     font-weight: bold;
     text-transform: uppercase;
@@ -83,8 +91,8 @@ header nav a {
 }
 
 header nav a:hover {
-    background-color: var(--color-primary-red); /* Rojo al pasar el ratón */
-    color: var(--color-white); /* Texto blanco sobre rojo */
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
 }
 
 /* --- Main Content Padding --- */
@@ -99,7 +107,7 @@ main {
 }
 
 #inicio h2 {
-    color: var(--color-primary-red); /* Título de inicio en rojo */
+    color: var(--color-primary-red);
 }
 
 /* --- Search Containers --- */
@@ -109,7 +117,7 @@ main {
     gap: 10px;
     margin-top: 25px;
     margin-bottom: 25px;
-    flex-wrap: wrap; /* Para que se ajusten en pantallas pequeñas */
+    flex-wrap: wrap;
 }
 
 .search-container input[type="text"] {
@@ -119,7 +127,8 @@ main {
     width: 60%;
     max-width: 450px;
     font-size: 1em;
-    box-sizing: border-box; /* Incluir padding y borde en el ancho */
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para inputs */
 }
 
 .search-container button {
@@ -132,34 +141,31 @@ main {
     font-size: 1em;
     font-weight: bold;
     transition: background-color 0.3s ease, transform 0.2s ease;
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para botones */
 }
 
 .search-container button:hover {
     background-color: var(--color-dark-red);
-    transform: translateY(-2px); /* Pequeño efecto al pasar el ratón */
+    transform: translateY(-2px);
 }
 
 .search-results-container {
     margin-top: 20px;
     padding: 20px;
-    border: 1px dashed var(--color-primary-red); /* Borde más distintivo para resultados */
+    border: 1px dashed var(--color-primary-red);
     background-color: var(--color-light-gray);
     border-radius: 8px;
 }
 
 .search-results-container h4 {
     margin-top: 0;
-    border-bottom: 2px solid var(--color-primary-red); /* Línea divisoria roja */
+    border-bottom: 2px solid var(--color-primary-red);
     padding-bottom: 8px;
     color: var(--color-black);
 }
 
-.search-results-container p {
-    margin: 8px 0;
-}
-
 .search-results-container .ver-mas-btn {
-    background-color: var(--color-dark-gray); /* Botón de detalle en gris oscuro */
+    background-color: var(--color-dark-gray);
     color: var(--color-white);
     border: none;
     padding: 6px 12px;
@@ -193,7 +199,7 @@ main {
 }
 
 .accordion-header {
-    background-color: var(--color-black); /* Encabezado de la letra en negro */
+    background-color: var(--color-black);
     color: var(--color-white);
     padding: 18px 25px;
     cursor: pointer;
@@ -204,26 +210,27 @@ main {
 }
 
 .accordion-header:hover {
-    background-color: var(--color-dark-gray); /* Gris oscuro al pasar el ratón */
+    background-color: var(--color-dark-gray);
 }
 
 .accordion-header.active {
-    background-color: var(--color-primary-red); /* Rojo cuando está activo */
+    background-color: var(--color-primary-red);
     color: var(--color-white);
 }
 
 .accordion-header h3 {
     margin: 0;
     font-size: 1.3em;
-    color: inherit; /* Hereda el color del padre (white o red) */
-    font-family: 'Arial Black', sans-serif;
+    color: inherit;
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para títulos de acordeón */
+    font-weight: 700;
 }
 
 .accordion-header::after {
     content: '+';
     font-size: 1.6em;
     font-weight: bold;
-    color: var(--color-white); /* Icono siempre blanco */
+    color: var(--color-white);
     transition: transform 0.3s ease;
 }
 
@@ -234,12 +241,12 @@ main {
 
 .accordion-content {
     padding: 15px 25px;
-    background-color: var(--color-white); /* Contenido del acordeón en blanco */
+    background-color: var(--color-white);
 }
 
 /* Band Card Styles (within accordion-content) */
 .band-card {
-    background-color: var(--color-light-gray); /* Fondo gris claro para las tarjetas de banda */
+    background-color: var(--color-light-gray);
     border: 1px solid var(--color-medium-gray);
     border-radius: 8px;
     padding: 15px;
@@ -256,8 +263,9 @@ main {
 .band-card h3 {
     margin-top: 0;
     font-size: 1.2em;
-    color: var(--color-primary-red); /* Título de la banda en rojo */
-    font-family: 'Arial Black', sans-serif;
+    color: var(--color-primary-red);
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para títulos de tarjeta de banda */
+    font-weight: 700;
 }
 
 .band-card p {
@@ -267,7 +275,7 @@ main {
 }
 
 .band-card .ver-mas-btn {
-    background-color: var(--color-dark-gray); /* Botón "Ver más" en gris oscuro */
+    background-color: var(--color-dark-gray);
     color: var(--color-white);
     border: none;
     padding: 10px 18px;
@@ -276,6 +284,7 @@ main {
     font-size: 0.9em;
     font-weight: bold;
     transition: background-color 0.3s ease;
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para botones de tarjeta de banda */
 }
 
 .band-card .ver-mas-btn:hover {
@@ -286,7 +295,7 @@ main {
 .grid-container {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 25px; /* Más espacio entre elementos */
+    gap: 25px;
     margin-top: 20px;
 }
 
@@ -308,7 +317,7 @@ main {
 }
 
 .event-card h4, .media-card h4 {
-    color: var(--color-primary-red); /* Títulos de eventos/multimedia en rojo */
+    color: var(--color-primary-red);
 }
 
 .media-card img, .media-card iframe {
@@ -317,7 +326,7 @@ main {
     display: block;
     margin-top: 15px;
     border-radius: 6px;
-    border: 1px solid var(--color-medium-gray); /* Borde para imágenes/videos */
+    border: 1px solid var(--color-medium-gray);
 }
 
 /* --- Load More Button (if still used for other sections, though not for bands now) --- */
@@ -326,7 +335,7 @@ main {
     margin-top: 25px;
 }
 
-.button { /* Estilo para el botón de descarga del libro */
+.button {
     display: inline-block;
     background-color: var(--color-primary-red);
     color: var(--color-white);
@@ -336,6 +345,7 @@ main {
     font-weight: bold;
     margin-top: 15px;
     transition: background-color 0.3s ease;
+    font-family: 'Montserrat', sans-serif; /* <-- CAMBIO AQUÍ: Fuente para el botón de descarga */
 }
 
 .button:hover {
@@ -365,7 +375,7 @@ footer {
     text-align: center;
     padding: 25px;
     margin-top: 40px;
-    background-color: var(--color-black); /* Fondo del footer en negro */
+    background-color: var(--color-black);
     color: var(--color-white);
     font-size: 0.9em;
     box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.3);
@@ -403,7 +413,7 @@ footer {
     }
 
     .grid-container {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        grid-template-columns: 1fr;
         gap: 15px;
     }
 
