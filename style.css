@@ -199,7 +199,7 @@ main {
 /* Contenedor del grid para los encabezados de las letras */
 .accordion-grid-headers {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 5 columnas aprox, ajustable */
+    grid-template-columns: repeat(5, 1fr); /* 5 columnas aprox, ajustable */
     gap: 10px; /* Espacio entre las "letras" */
     margin-bottom: 20px; /* Espacio antes del primer contenido de acordeón */
     border: 1px solid var(--color-medium-gray); /* Borde para el contenedor de letras */
@@ -213,7 +213,7 @@ main {
 .accordion-header {
     background-color: var(--color-black); /* Encabezado de la letra en negro */
     color: var(--color-white);
-    padding: 10px; /* Ajustado para el grid */
+    padding: 15px; /* Aumenta el padding para hacer el botón más alto */
     cursor: pointer;
     display: flex;
     justify-content: space-between; /* Espacio entre letra y icono */
@@ -221,7 +221,7 @@ main {
     transition: background-color 0.3s ease, color 0.3s ease;
     text-align: center; /* Centrar el texto de la letra */
     border-radius: 8px; /* Bordes redondeados para cada celda de la cuadrícula */
-    height: 60px; /* Altura fija para que todas las "celdas" sean uniformes */
+    height: auto; /* Dejar que la altura se ajuste al contenido y padding */
     box-sizing: border-box; /* Incluir padding y borde en la altura */
     font-family: 'Roboto', sans-serif;
     font-weight: 700;
