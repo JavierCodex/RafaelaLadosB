@@ -473,7 +473,6 @@ function realizarBusquedaGlobal() {
 function inicializarEventosYMultimedia() {
     // Eventos
     if (eventosHistoricosDiv) {
-        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3>';
         const totalEvents = todosLosEventos.length;
         
         // Limpiar solo los eventos renderizados previamente (no el título h3)
@@ -516,7 +515,6 @@ function inicializarEventosYMultimedia() {
 
     // Multimedia
     if (galeriaMultimediaDiv) {
-        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3>';
         const totalMultimedia = todosLosMultimedia.length;
         
         // Limpiar solo los elementos multimedia renderizados previamente (no el título h3)
