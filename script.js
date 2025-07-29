@@ -480,6 +480,8 @@ function inicializarEventosYMultimedia() {
         const existingEventCards = eventosHistoricosDiv.querySelectorAll('.event-card');
         existingEventCards.forEach(card => card.remove());
 
+        // Resetear la página actual de eventos al inicializar
+        currentEventPage = 1; 
         renderEvents(0, ITEMS_PER_PAGE); // Renderiza la primera página de eventos
 
         // Eliminar el botón "Ver más eventos" existente antes de añadir uno nuevo
@@ -521,6 +523,8 @@ function inicializarEventosYMultimedia() {
         const existingMediaCards = galeriaMultimediaDiv.querySelectorAll('.media-card');
         existingMediaCards.forEach(card => card.remove());
 
+        // Resetear la página actual de multimedia al inicializar
+        currentMultimediaPage = 1;
         renderMultimedia(0, ITEMS_PER_PAGE); // Renderiza la primera página de multimedia
 
         // Eliminar el botón "Ver más multimedia" existente antes de añadir uno nuevo
@@ -563,23 +567,37 @@ function renderEvents(startIndex, endIndex) {
     const fragment = document.createDocumentFragment();
     for (let i = startIndex; i < endIndex; i++) {
         const evento = todosLosEventos[i];
-        if (!evento) continue;
+        if (!evento) continue; // Saltar si el evento no existe (ej. por datos inconsistentes)
 
-        console.log("DEBUG: Renderizando evento:", evento); // Log the full event object
+        console.log("DEBUG: Datos del evento para renderizar:", evento); // Añadido para depuración
 
         const eventoCard = document.createElement('div');
         eventoCard.classList.add('event-card');
 
         // Procesar las bandas participantes para hacerlas clicables
         let bandasHtml = 'N/A';
-        if (evento.Bandas_Participantes_ID) { // Use the correct field name from your sheet
+        if (evento.Bandas_Participantes_ID) { // Usa el nombre de columna exacto de tu hoja
             const bandaIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase());
             const bandasEncontradas = todosLosBandas.filter(banda => banda.ID_Banda && bandaIDs.includes(banda.ID_Banda.trim().toUpperCase()));
             
             if (bandasEncontradas.length > 0) {
-                bandasHtml = bandasEncontradas.map(banda => {
-                    return `<span class="event-band-link" data-band-id="${banda.ID_Banda}">${banda.Nombre_Banda || 'Banda sin nombre'}</span>`;
-                }).join(', ');
+                // Crear un array de spans para las bandas y luego unirlos
+                const bandSpans = bandasEncontradas.map(banda => {
+                    const span = document.createElement('span');
+                    span.classList.add('event-band-link');
+                    span.dataset.bandId = banda.ID_Banda;
+                    span.textContent = banda.Nombre_Banda || 'Banda sin nombre';
+                    // Adjuntar el event listener directamente al span creado
+                    span.addEventListener('click', (e) => {
+                        const clickedBandId = e.target.dataset.bandId;
+                        const clickedBanda = todosLosBandas.find(b => b.ID_Banda === clickedBandId);
+                        if (clickedBanda) {
+                            mostrarDetalleBanda(clickedBanda);
+                        }
+                    });
+                    return span.outerHTML; // Devolver el HTML del span para unirlo
+                });
+                bandasHtml = bandSpans.join(', ');
             }
         }
 
@@ -592,25 +610,6 @@ function renderEvents(startIndex, endIndex) {
         fragment.appendChild(eventoCard);
     }
     
-    const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
-    if (loadMoreBtn) {
-        eventosHistoricosDiv.insertBefore(fragment, loadMoreBtn);
-    } else {
-        eventosHistoricosDiv.appendChild(fragment);
-    }
-
-    // Añadir event listeners a los enlaces de bandas recién creados
-    fragment.querySelectorAll('.event-band-link').forEach(span => {
-        span.addEventListener('click', (e) => {
-            const bandId = e.target.dataset.bandId;
-            const banda = todosLosBandas.find(b => b.ID_Banda === bandId);
-            if (banda) {
-                mostrarDetalleBanda(banda);
-            }
-        });
-    });
-}
-    
     // Añadir al contenedor de eventos, pero antes del botón "Ver más" si existe
     const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
     if (loadMoreBtn) {
@@ -618,17 +617,7 @@ function renderEvents(startIndex, endIndex) {
     } else {
         eventosHistoricosDiv.appendChild(fragment);
     }
-
-    // Añadir event listeners a los enlaces de bandas recién creados
-    fragment.querySelectorAll('.event-band-link').forEach(span => {
-        span.addEventListener('click', (e) => {
-            const bandId = e.target.dataset.bandId;
-            const banda = todosLosBandas.find(b => b.ID_Banda === bandId);
-            if (banda) {
-                mostrarDetalleBanda(banda);
-            }
-        });
-    });
+    // NOTA: Ya no necesitamos fragment.querySelectorAll aquí porque los listeners se adjuntan al crear los spans.
 }
 
 /**
