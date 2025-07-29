@@ -550,3 +550,8 @@ footer {
         font-size: 1.5em;
     }
 }
+
+/* Nuevo estilo para justificar el texto en la sección del libro */
+#libro p {
+    text-align: justify;
+}
