@@ -19,16 +19,16 @@
     </header>
 
     <main>
-        <section id="inicio">
+        <section id="inicio" class="section-container">
             <h2>Archivo histórico del rock rafaelino</h2>
             <p>Proyecto dedicado a recopilar, conservar y difundir el rock local.</p>
             <p>Explorá la historia y cultura del rock en Rafaela.</p>
         </section>
 
-        <section id="busqueda-y-filtros">
+        <section id="busqueda-global" class="section-container">
             <h2>Explorá el archivo</h2>
             <div class="search-container">
-                <input type="text" id="buscar" placeholder="Buscar bandas, integrantes, eventos, generos...">
+                <input type="text" id="buscar" placeholder="Buscar bandas, integrantes, eventos, géneros...">
                 <button id="buscarBtn">Buscar</button>
             </div>
             <div id="busquedaResultados" class="search-results-container">
@@ -42,11 +42,11 @@
                 <button id="buscarBandasBtn">Buscar</button>
             </div>
 
-            <div class="grid-container" id="contenedorBandas">
+            <div id="bandasAlfabeticoContainer" class="accordion-container">
                 <p>Cargando bandas...</p>
             </div>
 
-            <div class="load-more-container">
+            <div class="load-more-container" style="display: none;">
                 <button id="loadMoreBandsBtn" class="ver-mas-btn">Ver más bandas</button>
             </div>
         </section>
@@ -54,14 +54,14 @@
         <section id="eventos" class="section-container">
             <h2>Eventos históricos</h2>
             <div id="eventosHistoricos" class="grid-container">
-                <p>Eventos disponibles próximamente.</p>
+                <p>Cargando eventos...</p>
             </div>
         </section>
 
         <section id="multimedia" class="section-container">
             <h2>Galería multimedia</h2>
             <div id="galeriaMultimedia" class="grid-container">
-                <p>Contenido multimedia disponible próximamente.</p>
+                <p>Cargando contenido multimedia...</p>
             </div>
         </section>
 
@@ -89,7 +89,7 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 Rafaela Lados B. Archivo histórico del rock local.</p>
+        <p>&copy; 2025, Rafaela Lados B. Archivo histórico del rock local.</p>
     </footer>
 
     <script src="script.js"></script>
