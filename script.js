@@ -34,12 +34,6 @@ const buscarInput = document.getElementById('buscar');
 const buscarBtn = document.getElementById('buscarBtn');
 const busquedaResultadosDiv = document.getElementById('busquedaResultados');
 
-// Nota: buscarBandasInput y buscarBandasBtn no están en tu HTML actual,
-// si los necesitas para una búsqueda específica de bandas, deberías añadirlos.
-// Por ahora, solo usaremos la búsqueda global.
-// const buscarBandasInput = document.getElementById('buscarBandas');
-// const buscarBandasBtn = document.getElementById('buscarBandasBtn');
-
 const bandasAlfabeticoContainer = document.getElementById('bandasAlfabeticoContainer'); // Contenedor para el agrupamiento alfabético
 const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn'); // Podría no ser necesario o usarse diferente
 
@@ -351,7 +345,8 @@ function realizarBusquedaGlobal() {
         bandas: [],
         integrantes: [],
         eventos: [],
-        multimedia: []
+        multimedia: [],
+        bandasPorIntegrantes: [] // Nueva categoría para bandas encontradas por integrante
     };
 
     // Buscar en Bandas
@@ -364,13 +359,30 @@ function realizarBusquedaGlobal() {
         }
     });
 
-    // Buscar en Integrantes
-    todosLosIntegrantes.forEach(integrante => {
-        if (integrante.Nombre_Integrante && integrante.Nombre_Integrante.toLowerCase().includes(terminoBusqueda) ||
-            (integrante.Instrumento && integrante.Instrumento.toLowerCase().includes(terminoBusqueda))) {
-            resultados.integrantes.push(integrante);
+    // Buscar en Integrantes Y sus Bandas
+    const integrantesEncontrados = todosLosIntegrantes.filter(integrante =>
+        (integrante.Nombre_Integrante && integrante.Nombre_Integrante.toLowerCase().includes(terminoBusqueda)) ||
+        (integrante.Instrumento && integrante.Instrumento.toLowerCase().includes(terminoBusqueda))
+    );
+    resultados.integrantes = integrantesEncontrados; // Agregamos los integrantes encontrados a los resultados
+
+    const bandasRelacionadasIDs = new Set(); // Para almacenar IDs de bandas únicas
+    integrantesEncontrados.forEach(integrante => {
+        if (integrante.ID_Banda) {
+            integrante.ID_Banda.split(',').map(id => id.trim().toUpperCase()).forEach(id => {
+                if (id) bandasRelacionadasIDs.add(id);
+            });
         }
     });
+
+    if (bandasRelacionadasIDs.size > 0) {
+        todosLosBandas.forEach(banda => {
+            if (banda.ID_Banda && bandasRelacionadasIDs.has(banda.ID_Banda.trim().toUpperCase())) {
+                resultados.bandasPorIntegrantes.push(banda);
+            }
+        });
+    }
+
 
     // Buscar en Eventos (usando 'Descripción' y 'Lugar' como campos de búsqueda)
     todosLosEventos.forEach(evento => {
@@ -392,12 +404,14 @@ function realizarBusquedaGlobal() {
 
     // Mostrar resultados
     let resultadosHTML = '';
+    let foundAnyResult = false; // Flag para saber si se encontró algún resultado
 
     if (resultados.bandas.length > 0) {
         resultadosHTML += '<h4>Resultados en Bandas:</h4>';
         resultados.bandas.forEach(banda => {
             resultadosHTML += `<p>${banda.Nombre_Banda} (${banda.Genero || 'N/A'}) <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-type="banda">Ver más</button></p>`;
         });
+        foundAnyResult = true;
     }
 
     if (resultados.integrantes.length > 0) {
@@ -405,307 +419,16 @@ function realizarBusquedaGlobal() {
         resultados.integrantes.forEach(integrante => {
             resultadosHTML += `<p>${integrante.Nombre_Integrante} (${integrante.Instrumento || 'N/A'})</p>`;
         });
+        foundAnyResult = true;
     }
 
-    if (resultados.eventos.length > 0) {
-        resultadosHTML += '<h4>Resultados en Eventos:</h4>';
-        resultados.eventos.forEach(evento => {
-            resultadosHTML += `<p>${evento.Descripción} (${evento.Fecha || 'N/A'})</p>`;
-        });
-    }
-
-    if (resultados.multimedia.length > 0) {
-        resultadosHTML += '<h4>Resultados en Multimedia:</h4>';
-        resultados.multimedia.forEach(media => {
-            resultadosHTML += `<p>${media.Descripción} (${media.Tipo_Relacion || 'N/A'})</p>`;
-        });
-    }
-
-    if (resultadosHTML === '') {
-        busquedaResultadosDiv.innerHTML = '<p>No se encontraron resultados para su búsqueda.</p>';
-    } else {
-        busquedaResultadosDiv.innerHTML = resultadosHTML;
-    }
-
-    // Re-adjuntar event listeners para los botones "Ver más" de la búsqueda global
-    document.querySelectorAll('#busquedaResultados .ver-mas-btn').forEach(button => {
-        button.addEventListener('click', (event) => {
-            const id = event.target.dataset.id;
-            const type = event.target.dataset.type; // 'banda'
-            if (type === 'banda') {
-                const bandaSeleccionada = todosLosBandas.find(b => b.ID_Banda === id);
-                if (bandaSeleccionada) {
-                    mostrarDetalleBanda(bandaSeleccionada);
-                }
-            }
-        });
-    });
-}
-
-// --- Función para inicializar eventos y multimedia ---
-// Esta función ahora manejará la paginación y la visualización de miniaturas
-function inicializarEventosYMultimedia() {
-    // Eventos
-    if (eventosHistoricosDiv) {
-        eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3>';
-        const totalEvents = todosLosEventos.length;
-        const startIndex = 0;
-        const endIndex = Math.min(ITEMS_PER_PAGE, totalEvents);
-        
-        renderEvents(startIndex, endIndex); // Renderiza la primera página de eventos
-
-        if (totalEvents > ITEMS_PER_PAGE) {
-            const loadMoreEventsBtn = document.createElement('button');
-            loadMoreEventsBtn.classList.add('ver-mas-btn', 'load-more-events');
-            loadMoreEventsBtn.textContent = 'Ver más eventos';
-            eventosHistoricosDiv.appendChild(loadMoreEventsBtn);
-
-            loadMoreEventsBtn.addEventListener('click', () => {
-                currentEventPage++;
-                const newStartIndex = (currentEventPage - 1) * ITEMS_PER_PAGE;
-                const newEndIndex = Math.min(currentEventPage * ITEMS_PER_PAGE, totalEvents);
-                renderEvents(newStartIndex, newEndIndex);
-
-                if (newEndIndex === totalEvents) {
-                    loadMoreEventsBtn.style.display = 'none'; // Ocultar si ya no hay más
-                }
-            });
-        }
-        console.log("DEBUG: Eventos históricos inicializados con paginación.");
-    } else {
-        console.error("DEBUG: Elemento #eventosHistoricos no encontrado. Asegúrate de que exista en tu HTML.");
-    }
-
-    // Multimedia
-    if (galeriaMultimediaDiv) {
-        galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3>';
-        const totalMultimedia = todosLosMultimedia.length;
-        const startIndex = 0;
-        const endIndex = Math.min(ITEMS_PER_PAGE, totalMultimedia);
-
-        renderMultimedia(startIndex, endIndex); // Renderiza la primera página de multimedia
-
-        if (totalMultimedia > ITEMS_PER_PAGE) {
-            const loadMoreMultimediaBtn = document.createElement('button');
-            loadMoreMultimediaBtn.classList.add('ver-mas-btn', 'load-more-multimedia');
-            loadMoreMultimediaBtn.textContent = 'Ver más multimedia';
-            galeriaMultimediaDiv.appendChild(loadMoreMultimediaBtn);
-
-            loadMoreMultimediaBtn.addEventListener('click', () => {
-                currentMultimediaPage++;
-                const newStartIndex = (currentMultimediaPage - 1) * ITEMS_PER_PAGE;
-                const newEndIndex = Math.min(currentMultimediaPage * ITEMS_PER_PAGE, totalMultimedia);
-                renderMultimedia(newStartIndex, newEndIndex);
-
-                if (newEndIndex === totalMultimedia) {
-                    loadMoreMultimediaBtn.style.display = 'none'; // Ocultar si ya no hay más
-                }
-            });
-        }
-        console.log("DEBUG: Galería multimedia inicializada con paginación.");
-    } else {
-        console.error("DEBUG: Elemento #galeriaMultimedia no encontrado. Asegúrate de que exista en tu HTML.");
-    }
-}
-
-/**
- * Renderiza un rango de eventos en el DOM.
- * @param {number} startIndex - Índice de inicio para la renderización.
- * @param {number} endIndex - Índice de fin para la renderización.
- */
-function renderEvents(startIndex, endIndex) {
-    const fragment = document.createDocumentFragment();
-    for (let i = startIndex; i < endIndex; i++) {
-        const evento = todosLosEventos[i];
-        if (!evento) continue; // Saltar si el evento no existe (ej. por datos inconsistentes)
-
-        const eventoCard = document.createElement('div');
-        eventoCard.classList.add('event-card');
-        eventoCard.innerHTML = `
-            <h4>${evento.Descripción || 'Evento sin título'}</h4>
-            <p>Fecha: ${evento.Fecha || 'Sin fecha'}</p>
-            <p>Lugar: ${evento.Lugar || 'Desconocido'}</p>
-            <!-- Puedes añadir Bandas_Participantes_ID si es relevante para la visualización -->
-            <!-- <p>Bandas: ${evento.Bandas_Participantes_ID || 'N/A'}</p> -->
-        `;
-        fragment.appendChild(eventoCard);
-    }
-    // Añadir al contenedor de eventos, pero antes del botón "Ver más" si existe
-    const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
-    if (loadMoreBtn) {
-        eventosHistoricosDiv.insertBefore(fragment, loadMoreBtn);
-    } else {
-        eventosHistoricosDiv.appendChild(fragment);
-    }
-}
-
-/**
- * Renderiza un rango de elementos multimedia en el DOM.
- * @param {number} startIndex - Índice de inicio para la renderización.
- * @param {number} endIndex - Índice de fin para la renderización.
- */
-function renderMultimedia(startIndex, endIndex) {
-    const fragment = document.createDocumentFragment();
-    for (let i = startIndex; i < endIndex; i++) {
-        const item = todosLosMultimedia[i];
-        if (!item) continue; // Saltar si el item no existe
-
-        const mediaCard = document.createElement('div');
-        mediaCard.classList.add('media-card');
-        
-        let mediaContentHTML = `<h4>${item.Descripción || 'Contenido sin título'}</h4>`; // Solo el nombre dado en Descripción
-
-        if (item.URL && item.Tipo_Relacion) {
-            const type = item.Tipo_Relacion.toUpperCase();
-            if (type === 'IMAGEN') {
-                mediaContentHTML += `<img src="${item.URL}" alt="${item.Descripción || 'Imagen'}" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Imagen';" style="max-width: 100%; height: auto;">`;
-            } else if (type.includes('VIDEO')) {
-                // Extraer ID de YouTube si es posible y usar un iframe para incrustar
-                const youtubeMatch = item.URL.match(/(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-                if (youtubeMatch && youtubeMatch[1]) {
-                    const videoId = youtubeMatch[1];
-                    // Usar la URL de miniatura de YouTube
-                    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`; 
-                    
-                    mediaContentHTML += `
-                        <div class="video-thumbnail-container">
-                            <img src="${thumbnailUrl}" alt="Miniatura de ${item.Descripción || 'video'}" class="video-thumbnail" onerror="this.onerror=null;this.src='https://placehold.co/280x157/cccccc/333333?text=Error+Video';" data-video-id="${videoId}">
-                            <div class="play-button">&#9658;</div>
-                        </div>
-                    `;
-                } else {
-                    // Si no es YouTube o no se puede parsear, mostrar un enlace
-                    mediaContentHTML += `<p><a href="${item.URL}" target="_blank">Ver video externo</a></p>`;
-                }
-            } else {
-                // Para otros tipos de URL que no son imagen/video
-                mediaContentHTML += `<p><a href="${item.URL}" target="_blank">Ver contenido</a></p>`;
-            }
-        } else {
-            mediaContentHTML += `<p>Contenido no disponible o URL/Tipo no especificado.</p>`;
-        }
-        
-        mediaCard.innerHTML = mediaContentHTML;
-        fragment.appendChild(mediaCard);
-    }
-    // Añadir al contenedor de multimedia, pero antes del botón "Ver más" si existe
-    const loadMoreBtn = galeriaMultimediaDiv.querySelector('.load-more-multimedia');
-    if (loadMoreBtn) {
-        galeriaMultimediaDiv.insertBefore(fragment, loadMoreBtn);
-    } else {
-        galeriaMultimediaDiv.appendChild(fragment);
-    }
-
-    // Añadir event listeners para los botones de play de video
-    galeriaMultimediaDiv.querySelectorAll('.video-thumbnail-container').forEach(container => {
-        container.addEventListener('click', function() {
-            const videoId = this.querySelector('.video-thumbnail').dataset.videoId;
-            if (videoId) {
-                const iframe = document.createElement('iframe');
-                iframe.setAttribute('width', '100%'); // Ajustar al 100% del contenedor
-                iframe.setAttribute('height', '157'); // Mantener la altura original o ajustar
-                iframe.setAttribute('src', `https://www.youtube.com/embed/${videoId}?autoplay=1`);
-                iframe.setAttribute('frameborder', '0');
-                iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture');
-                iframe.setAttribute('allowfullscreen', '');
-                this.replaceWith(iframe); // Reemplazar la miniatura con el iframe
-            }
-        });
-    });
-}
-
-
-// --- Búsqueda Global (Integrantes, Eventos, Géneros) ---
-
-// Función para inicializar la búsqueda global
-function inicializarBusquedaGlobal() {
-    // Renombrado de variables para coincidir con tu HTML actual:
-    const buscarGlobalInput = document.getElementById('buscar');
-    const buscarGlobalBtn = document.getElementById('buscarBtn');
-    const busquedaResultadosDiv = document.getElementById('busquedaResultados');
-
-
-    if (buscarGlobalInput && buscarGlobalBtn && busquedaResultadosDiv) {
-        buscarGlobalBtn.addEventListener('click', realizarBusquedaGlobal);
-        buscarGlobalInput.addEventListener('keypress', (event) => {
-            if (event.key === 'Enter') {
-                realizarBusquedaGlobal();
-            }
-        });
-        console.log("DEBUG: Búsqueda global inicializada.");
-    } else {
-        console.error("DEBUG: Elementos de búsqueda global no encontrados. Asegúrate de que los IDs 'buscar', 'buscarBtn' y 'busquedaResultados' existan en tu HTML.");
-    }
-}
-
-function realizarBusquedaGlobal() {
-    const terminoBusqueda = document.getElementById('buscar').value.toLowerCase().trim(); // Usar el ID correcto
-    const busquedaResultadosDiv = document.getElementById('busquedaResultados'); // Usar el ID correcto
-    busquedaResultadosDiv.innerHTML = ''; // Limpiar resultados anteriores
-
-    if (terminoBusqueda === '') {
-        busquedaResultadosDiv.innerHTML = '<p>Por favor, introduce un término de búsqueda.</p>';
-        return;
-    }
-
-    const resultados = {
-        bandas: [],
-        integrantes: [],
-        eventos: [],
-        multimedia: []
-    };
-
-    // Buscar en Bandas
-    todosLosBandas.forEach(banda => {
-        if (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(terminoBusqueda) ||
-            (banda.Genero && banda.Genero.toLowerCase().includes(terminoBusqueda)) ||
-            (banda.Anos_Actividad && banda.Anos_Actividad.toLowerCase().includes(terminoBusqueda)) ||
-            (banda.Biografia && banda.Biografia.toLowerCase().includes(terminoBusqueda))) {
-            resultados.bandas.push(banda);
-        }
-    });
-
-    // Buscar en Integrantes
-    todosLosIntegrantes.forEach(integrante => {
-        if (integrante.Nombre_Integrante && integrante.Nombre_Integrante.toLowerCase().includes(terminoBusqueda) ||
-            (integrante.Instrumento && integrante.Instrumento.toLowerCase().includes(terminoBusqueda))) {
-            resultados.integrantes.push(integrante);
-        }
-    });
-
-    // Buscar en Eventos (usando 'Descripción' y 'Lugar' como campos de búsqueda)
-    todosLosEventos.forEach(evento => {
-        if (evento.Descripción && evento.Descripción.toLowerCase().includes(terminoBusqueda) ||
-            (evento.Fecha && evento.Fecha.toLowerCase().includes(terminoBusqueda)) ||
-            (evento.Lugar && evento.Lugar.toLowerCase().includes(terminoBusqueda)) ||
-            (evento.Bandas_Participantes_ID && evento.Bandas_Participantes_ID.toLowerCase().includes(terminoBusqueda))) { // Puedes ajustar este campo si no existe
-            resultados.eventos.push(evento);
-        }
-    });
-
-    // Buscar en Multimedia (usando 'Descripción' y 'Tipo_Relacion' como campos de búsqueda)
-    todosLosMultimedia.forEach(media => {
-        if (media.Descripción && media.Descripción.toLowerCase().includes(terminoBusqueda) ||
-            (media.Tipo_Relacion && media.Tipo_Relacion.toLowerCase().includes(terminoBusqueda))) {
-            resultados.multimedia.push(media);
-        }
-    });
-
-    // Mostrar resultados
-    let resultadosHTML = '';
-
-    if (resultados.bandas.length > 0) {
-        resultadosHTML += '<h4>Resultados en Bandas:</h4>';
-        resultados.bandas.forEach(banda => {
+    // Nueva sección para bandas encontradas por integrante
+    if (resultados.bandasPorIntegrantes.length > 0) {
+        resultadosHTML += '<h4>Bandas relacionadas con el integrante:</h4>';
+        resultados.bandasPorIntegrantes.forEach(banda => {
             resultadosHTML += `<p>${banda.Nombre_Banda} (${banda.Genero || 'N/A'}) <button class="ver-mas-btn" data-id="${banda.ID_Banda}" data-type="banda">Ver más</button></p>`;
         });
-    }
-
-    if (resultados.integrantes.length > 0) {
-        resultadosHTML += '<h4>Resultados en Integrantes:</h4>';
-        resultados.integrantes.forEach(integrante => {
-            resultadosHTML += `<p>${integrante.Nombre_Integrante} (${integrante.Instrumento || 'N/A'})</p>`;
-        });
+        foundAnyResult = true;
     }
 
     if (resultados.eventos.length > 0) {
@@ -713,6 +436,7 @@ function realizarBusquedaGlobal() {
         resultados.eventos.forEach(evento => {
             resultadosHTML += `<p>${evento.Descripción} (${evento.Fecha || 'N/A'})</p>`;
         });
+        foundAnyResult = true;
     }
 
     if (resultados.multimedia.length > 0) {
@@ -720,9 +444,10 @@ function realizarBusquedaGlobal() {
         resultados.multimedia.forEach(media => {
             resultadosHTML += `<p>${media.Descripción} (${media.Tipo_Relacion || 'N/A'})</p>`;
         });
+        foundAnyResult = true;
     }
 
-    if (resultadosHTML === '') {
+    if (!foundAnyResult) {
         busquedaResultadosDiv.innerHTML = '<p>No se encontraron resultados para su búsqueda.</p>';
     } else {
         busquedaResultadosDiv.innerHTML = resultadosHTML;
