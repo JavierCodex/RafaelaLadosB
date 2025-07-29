@@ -1,10 +1,20 @@
-// --- Variables Globales ---
-// URLs de tus hojas de Google Sheets (¡ASEGÚRATE DE QUE ESTÉN PUBLICADAS PÚBLICAMENTE!)
-// Reemplaza estos placeholders con los URLs reales de tus hojas publicadas.
-const URL_BANDAS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgsG2ogpA4J9oZNSFbnSKRr-YNSTTC5VVjVoEdf7gpd/pub?output=csv'; // Ejemplo de URL CSV
-const URL_INTEGRANTES = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgsG2ogpA4J9oZNSFbnSKRr-YNSTTC5VVjVoEdf7gpd/pub?output=csv'; // Ejemplo de URL CSV
-const URL_EVENTOS = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgsG2ogpA4J9oZNSFbnSKRr-YNSTTC5VVjVoEdf7gpd/pub?output=csv'; // Ejemplo de URL CSV
-const URL_MULTIMEDIA = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgsG2ogpA4J9oZNSFbnSKRr-YNSTTC5VVjVoEdf7gpd/pub?output=csv'; // Ejemplo de URL CSV
+// --- CONSTANTES GLOBALES Y URLS DE LA API DE GOOGLE SHEETS ---
+// IMPORTANTE: Tu API Key. Reemplaza 'TU_API_KEY' con tu clave real.
+// Para proyectos de mayor escala o con datos sensibles,
+// no se recomienda exponer la API Key directamente en el frontend.
+// Para este caso con datos públicos, es aceptable.
+const API_KEY = 'AIzaSyAP4nFhq5mON1hT0yllhtT9uj8zqPjw-3E';
+
+// Tu Spreadsheet ID. Reemplaza 'TU_SPREADSHEET_ID' con tu ID real.
+// Este ID es el mismo para todas tus hojas de cálculo en el mismo archivo.
+const SPREADSHEET_ID = '19g6yEmw7goAvQLSO5sGu87rHpEPRSknr-YNSTFCSrVY';
+
+// URLs de la API para cada hoja, solicitando el formato JSON (&alt=json)
+const URL_BANDAS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Bandas?key=${API_KEY}&alt=json`;
+const URL_INTEGRANTES_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Integrantes?key=${API_KEY}&alt=json`;
+const URL_EVENTOS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Eventos?key=${API_KEY}&alt=json`;
+const URL_MULTIMEDIA_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Multimedia?key=${API_KEY}&alt=json`;
+// --- FIN CONSTANTES GLOBALES ---
 
 
 let todasLasBandas = [];
