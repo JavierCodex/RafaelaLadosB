@@ -475,9 +475,18 @@ function inicializarEventosYMultimedia() {
     if (eventosHistoricosDiv) {
         eventosHistoricosDiv.innerHTML = '<h3>Eventos históricos</h3>';
         const totalEvents = todosLosEventos.length;
-        // Inicialmente, no limpiamos el div para permitir que renderEvents añada elementos
         
+        // Limpiar solo los eventos renderizados previamente (no el título h3)
+        const existingEventCards = eventosHistoricosDiv.querySelectorAll('.event-card');
+        existingEventCards.forEach(card => card.remove());
+
         renderEvents(0, ITEMS_PER_PAGE); // Renderiza la primera página de eventos
+
+        // Eliminar el botón "Ver más eventos" existente antes de añadir uno nuevo
+        const oldLoadMoreEventsBtn = eventosHistoricosDiv.querySelector('.load-more-events');
+        if (oldLoadMoreEventsBtn) {
+            oldLoadMoreEventsBtn.remove();
+        }
 
         if (totalEvents > ITEMS_PER_PAGE) {
             const loadMoreEventsBtn = document.createElement('button');
@@ -495,6 +504,8 @@ function inicializarEventosYMultimedia() {
                     loadMoreEventsBtn.style.display = 'none'; // Ocultar si ya no hay más
                 }
             });
+        } else if (totalEvents === 0) {
+            eventosHistoricosDiv.innerHTML += '<p>No se encontraron eventos.</p>';
         }
         console.log("DEBUG: Eventos históricos inicializados con paginación.");
     } else {
@@ -505,9 +516,18 @@ function inicializarEventosYMultimedia() {
     if (galeriaMultimediaDiv) {
         galeriaMultimediaDiv.innerHTML = '<h3>Galería multimedia</h3>';
         const totalMultimedia = todosLosMultimedia.length;
-        // Inicialmente, no limpiamos el div para permitir que renderMultimedia añada elementos
+        
+        // Limpiar solo los elementos multimedia renderizados previamente (no el título h3)
+        const existingMediaCards = galeriaMultimediaDiv.querySelectorAll('.media-card');
+        existingMediaCards.forEach(card => card.remove());
 
         renderMultimedia(0, ITEMS_PER_PAGE); // Renderiza la primera página de multimedia
+
+        // Eliminar el botón "Ver más multimedia" existente antes de añadir uno nuevo
+        const oldLoadMoreMultimediaBtn = galeriaMultimediaDiv.querySelector('.load-more-multimedia');
+        if (oldLoadMoreMultimediaBtn) {
+            oldLoadMoreMultimediaBtn.remove();
+        }
 
         if (totalMultimedia > ITEMS_PER_PAGE) {
             const loadMoreMultimediaBtn = document.createElement('button');
@@ -525,6 +545,8 @@ function inicializarEventosYMultimedia() {
                     loadMoreMultimediaBtn.style.display = 'none'; // Ocultar si ya no hay más
                 }
             });
+        } else if (totalMultimedia === 0) {
+            galeriaMultimediaDiv.innerHTML += '<p>No se encontró contenido multimedia.</p>';
         }
         console.log("DEBUG: Galería multimedia inicializada con paginación.");
     } else {
@@ -545,15 +567,29 @@ function renderEvents(startIndex, endIndex) {
 
         const eventoCard = document.createElement('div');
         eventoCard.classList.add('event-card');
+
+        // Procesar las bandas participantes para hacerlas clicables
+        let bandasHtml = 'N/A';
+        if (evento.Bandas_Participantes_ID) {
+            const bandaIDs = evento.Bandas_Participantes_ID.split(',').map(id => id.trim().toUpperCase());
+            const bandasEncontradas = todosLosBandas.filter(banda => banda.ID_Banda && bandaIDs.includes(banda.ID_Banda.trim().toUpperCase()));
+            
+            if (bandasEncontradas.length > 0) {
+                bandasHtml = bandasEncontradas.map(banda => {
+                    return `<span class="event-band-link" data-band-id="${banda.ID_Banda}">${banda.Nombre_Banda || 'Banda sin nombre'}</span>`;
+                }).join(', ');
+            }
+        }
+
         eventoCard.innerHTML = `
             <h4>${evento.Descripción || 'Evento sin título'}</h4>
             <p>Fecha: ${evento.Fecha || 'Sin fecha'}</p>
             <p>Lugar: ${evento.Lugar || 'Desconocido'}</p>
-            <!-- Puedes añadir Bandas_Participantes_ID si es relevante para la visualización -->
-            <!-- <p>Bandas: ${evento.Bandas_Participantes_ID || 'N/A'}</p> -->
+            <p>Bandas: ${bandasHtml}</p>
         `;
         fragment.appendChild(eventoCard);
     }
+    
     // Añadir al contenedor de eventos, pero antes del botón "Ver más" si existe
     const loadMoreBtn = eventosHistoricosDiv.querySelector('.load-more-events');
     if (loadMoreBtn) {
@@ -561,6 +597,17 @@ function renderEvents(startIndex, endIndex) {
     } else {
         eventosHistoricosDiv.appendChild(fragment);
     }
+
+    // Añadir event listeners a los enlaces de bandas recién creados
+    fragment.querySelectorAll('.event-band-link').forEach(span => {
+        span.addEventListener('click', (e) => {
+            const bandId = e.target.dataset.bandId;
+            const banda = todosLosBandas.find(b => b.ID_Banda === bandId);
+            if (banda) {
+                mostrarDetalleBanda(banda);
+            }
+        });
+    });
 }
 
 /**
