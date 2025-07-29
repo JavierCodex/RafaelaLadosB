@@ -1,152 +1,191 @@
-/* Estilos Generales y Reset */
+/* --- Variables de Color --- */
+:root {
+    --color-primary-red: #C00000; /* Un rojo vibrante y fuerte */
+    --color-dark-red: #8B0000;   /* Un rojo más oscuro para hover/activos */
+    --color-black: #1A1A1A;      /* Un negro muy oscuro, casi off-black */
+    --color-white: #FFFFFF;      /* Blanco puro */
+    --color-light-gray: #F0F0F0; /* Un gris muy claro para fondos sutiles */
+    --color-medium-gray: #CCCCCC; /* Un gris medio para bordes o texto secundario */
+    --color-dark-gray: #444444;   /* Un gris oscuro para texto en fondos claros */
+}
+
+/* --- Estilos Generales y Reset --- */
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif; /* Puedes cambiar por una fuente más rockera si deseas, ej. 'Montserrat', 'Open Sans', 'Roboto Condensed' */
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
-    color: #333;
+    background-color: var(--color-light-gray);
+    color: var(--color-dark-gray);
     line-height: 1.6;
 }
 
 a {
-    color: #007bff;
+    color: var(--color-primary-red);
     text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 a:hover {
+    color: var(--color-dark-red);
     text-decoration: underline;
 }
 
+/* --- Secciones y Contenedores Principales --- */
 .section-container {
-    padding: 20px;
-    margin: 20px auto;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    max-width: 960px; /* Ancho máximo para el contenido principal */
+    padding: 30px;
+    margin: 25px auto;
+    background-color: var(--color-white);
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra más definida */
+    max-width: 960px;
+    border: 1px solid var(--color-medium-gray); /* Borde sutil */
 }
 
 h1, h2, h3, h4 {
-    color: #333;
+    color: var(--color-black); /* Títulos en negro por defecto */
     margin-top: 0;
+    margin-bottom: 15px;
+    font-family: 'Arial Black', sans-serif; /* Fuente impactante para títulos, puedes importar otras */
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
-/* Header */
+/* --- Header --- */
 header {
-    background-color: #333;
-    color: white;
-    padding: 1rem 0;
+    background-color: var(--color-black); /* Fondo negro para el header */
+    color: var(--color-white);
+    padding: 1.5rem 0; /* Más padding vertical */
     text-align: center;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); /* Sombra más oscura */
 }
 
 header h1 {
     margin: 0;
-    font-size: 2.5em;
-    padding-bottom: 10px;
+    font-size: 3em; /* Tamaño grande para el título principal */
+    color: var(--color-primary-red); /* Título principal en rojo */
+    letter-spacing: 3px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Sombra de texto */
 }
 
 header nav {
-    margin-top: 10px;
+    margin-top: 20px;
 }
 
 header nav a {
-    color: white;
+    color: var(--color-white);
     text-decoration: none;
-    padding: 0.5rem 1rem;
+    padding: 0.7rem 1.5rem; /* Más padding para los enlaces de navegación */
     display: inline-block;
-}
-
-header nav a:hover {
-    background-color: #555;
+    font-weight: bold;
+    text-transform: uppercase;
+    transition: background-color 0.3s ease, color 0.3s ease;
     border-radius: 5px;
 }
 
-/* Main Content */
+header nav a:hover {
+    background-color: var(--color-primary-red); /* Rojo al pasar el ratón */
+    color: var(--color-white); /* Texto blanco sobre rojo */
+}
+
+/* --- Main Content Padding --- */
 main {
     padding: 20px;
 }
 
-/* Home/Intro Section */
+/* --- Home/Intro Section --- */
 #inicio {
     text-align: center;
+    background-color: var(--color-white);
 }
 
-/* Search Containers */
+#inicio h2 {
+    color: var(--color-primary-red); /* Título de inicio en rojo */
+}
+
+/* --- Search Containers --- */
 .search-container {
     display: flex;
     justify-content: center;
     gap: 10px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+    flex-wrap: wrap; /* Para que se ajusten en pantallas pequeñas */
 }
 
 .search-container input[type="text"] {
-    padding: 10px;
-    border: 1px solid #ddd;
+    padding: 12px;
+    border: 1px solid var(--color-medium-gray);
     border-radius: 5px;
     width: 60%;
-    max-width: 400px;
+    max-width: 450px;
+    font-size: 1em;
+    box-sizing: border-box; /* Incluir padding y borde en el ancho */
 }
 
 .search-container button {
-    padding: 10px 15px;
-    background-color: #007bff;
-    color: white;
+    padding: 12px 20px;
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 .search-container button:hover {
-    background-color: #0056b3;
+    background-color: var(--color-dark-red);
+    transform: translateY(-2px); /* Pequeño efecto al pasar el ratón */
 }
 
 .search-results-container {
     margin-top: 20px;
-    padding: 15px;
-    border: 1px solid #eee;
-    background-color: #f9f9f9;
-    border-radius: 5px;
+    padding: 20px;
+    border: 1px dashed var(--color-primary-red); /* Borde más distintivo para resultados */
+    background-color: var(--color-light-gray);
+    border-radius: 8px;
 }
 
 .search-results-container h4 {
     margin-top: 0;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 5px;
+    border-bottom: 2px solid var(--color-primary-red); /* Línea divisoria roja */
+    padding-bottom: 8px;
+    color: var(--color-black);
 }
 
 .search-results-container p {
-    margin: 5px 0;
+    margin: 8px 0;
 }
 
 .search-results-container .ver-mas-btn {
-    background-color: #28a745;
-    color: white;
+    background-color: var(--color-dark-gray); /* Botón de detalle en gris oscuro */
+    color: var(--color-white);
     border: none;
-    padding: 5px 10px;
-    border-radius: 3px;
+    padding: 6px 12px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 0.8em;
+    font-size: 0.85em;
     margin-left: 10px;
     transition: background-color 0.2s ease;
 }
 
 .search-results-container .ver-mas-btn:hover {
-    background-color: #218838;
+    background-color: var(--color-black);
 }
 
-/* Accordion (Alphabetical Bands Grouping) Styles */
+/* --- Accordion (Alphabetical Bands Grouping) Styles --- */
 .accordion-container {
     width: 100%;
     margin: 20px auto;
-    border: 1px solid #ccc;
+    border: 1px solid var(--color-medium-gray);
     border-radius: 8px;
     overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
 }
 
 .accordion-item {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--color-medium-gray);
 }
 
 .accordion-item:last-child {
@@ -154,182 +193,221 @@ main {
 }
 
 .accordion-header {
-    background-color: #f4f4f4;
-    padding: 15px 20px;
+    background-color: var(--color-black); /* Encabezado de la letra en negro */
+    color: var(--color-white);
+    padding: 18px 25px;
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .accordion-header:hover {
-    background-color: #e9e9e9;
+    background-color: var(--color-dark-gray); /* Gris oscuro al pasar el ratón */
+}
+
+.accordion-header.active {
+    background-color: var(--color-primary-red); /* Rojo cuando está activo */
+    color: var(--color-white);
 }
 
 .accordion-header h3 {
     margin: 0;
-    color: #333;
-    font-size: 1.2em;
+    font-size: 1.3em;
+    color: inherit; /* Hereda el color del padre (white o red) */
+    font-family: 'Arial Black', sans-serif;
 }
 
-/* Indicador de expansión/contracción (el + y -) */
 .accordion-header::after {
     content: '+';
-    font-size: 1.5em;
+    font-size: 1.6em;
     font-weight: bold;
-    color: #666;
+    color: var(--color-white); /* Icono siempre blanco */
     transition: transform 0.3s ease;
 }
 
 .accordion-header.active::after {
     content: '-';
-    transform: rotate(180deg); /* Opcional: para rotar el icono */
+    transform: rotate(180deg);
 }
 
 .accordion-content {
-    padding: 10px 20px;
-    background-color: #fff;
-    border-top: 1px solid #eee;
-    /* `display: none;` se maneja por JavaScript para ocultarlo por defecto */
+    padding: 15px 25px;
+    background-color: var(--color-white); /* Contenido del acordeón en blanco */
 }
 
 /* Band Card Styles (within accordion-content) */
 .band-card {
-    background-color: #fdfdfd;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: var(--color-light-gray); /* Fondo gris claro para las tarjetas de banda */
+    border: 1px solid var(--color-medium-gray);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.band-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
 
 .band-card h3 {
     margin-top: 0;
-    font-size: 1.1em;
-    color: #333;
+    font-size: 1.2em;
+    color: var(--color-primary-red); /* Título de la banda en rojo */
+    font-family: 'Arial Black', sans-serif;
 }
 
 .band-card p {
-    font-size: 0.9em;
-    color: #666;
-    margin-bottom: 5px;
+    font-size: 0.95em;
+    color: var(--color-dark-gray);
+    margin-bottom: 8px;
 }
 
 .band-card .ver-mas-btn {
-    background-color: #28a745; /* Color de tu botón verde */
-    color: white;
+    background-color: var(--color-dark-gray); /* Botón "Ver más" en gris oscuro */
+    color: var(--color-white);
     border: none;
-    padding: 8px 15px;
-    border-radius: 4px;
+    padding: 10px 18px;
+    border-radius: 5px;
     cursor: pointer;
     font-size: 0.9em;
-    transition: background-color 0.2s ease;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
 }
 
 .band-card .ver-mas-btn:hover {
-    background-color: #218838;
+    background-color: var(--color-black);
 }
 
-/* Event & Multimedia Grid Containers */
+/* --- Event & Multimedia Grid Containers --- */
 .grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* Responsive grid */
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px; /* Más espacio entre elementos */
     margin-top: 20px;
 }
 
 .event-card, .media-card {
-    background-color: #fdfdfd;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    background-color: var(--color-white);
+    border: 1px solid var(--color-medium-gray);
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.event-card:hover, .media-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+}
+
+.event-card h4, .media-card h4 {
+    color: var(--color-primary-red); /* Títulos de eventos/multimedia en rojo */
 }
 
 .media-card img, .media-card iframe {
     max-width: 100%;
     height: auto;
-    display: block; /* Elimina espacio extra debajo de las imágenes */
-    margin-top: 10px;
-    border-radius: 4px;
+    display: block;
+    margin-top: 15px;
+    border-radius: 6px;
+    border: 1px solid var(--color-medium-gray); /* Borde para imágenes/videos */
 }
 
-/* Load More Button (if still used for other sections) */
+/* --- Load More Button (if still used for other sections, though not for bands now) --- */
 .load-more-container {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 25px;
 }
 
-.ver-mas-btn { /* Estilo general para botones "Ver más" fuera de cards específicas */
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px 20px;
+.button { /* Estilo para el botón de descarga del libro */
+    display: inline-block;
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
+    padding: 12px 25px;
     border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-top: 15px;
     transition: background-color 0.3s ease;
 }
 
-.ver-mas-btn:hover {
-    background-color: #0056b3;
+.button:hover {
+    background-color: var(--color-dark-red);
+    text-decoration: none;
 }
 
-/* Contact Section */
+/* --- Contact Section --- */
 #contacto ul {
     list-style: none;
     padding: 0;
 }
 
 #contacto ul li {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    color: var(--color-dark-gray);
 }
 
-/* Footer */
+#contacto ul li a {
+    font-weight: bold;
+}
+
+
+/* --- Footer --- */
 footer {
     text-align: center;
-    padding: 20px;
-    margin-top: 30px;
-    background-color: #333;
-    color: white;
+    padding: 25px;
+    margin-top: 40px;
+    background-color: var(--color-black); /* Fondo del footer en negro */
+    color: var(--color-white);
     font-size: 0.9em;
+    box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsive adjustments */
+/* --- Responsive adjustments --- */
 @media (max-width: 768px) {
     header h1 {
-        font-size: 1.8em;
+        font-size: 2em;
+        letter-spacing: 1px;
     }
 
     header nav a {
-        padding: 0.5rem 0.8rem;
-        font-size: 0.9em;
+        padding: 0.6rem 0.8rem;
+        font-size: 0.85em;
     }
 
     .section-container {
-        padding: 15px;
+        padding: 20px;
         margin: 15px;
     }
 
     .search-container {
         flex-direction: column;
         align-items: center;
+        gap: 15px;
     }
 
     .search-container input[type="text"] {
-        width: 90%;
-        max-width: none;
+        width: 95%;
+    }
+
+    .search-container button {
+        width: 95%;
     }
 
     .grid-container {
         grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        gap: 15px;
     }
 
     .accordion-header h3 {
-        font-size: 1em;
+        font-size: 1.1em;
     }
 }
