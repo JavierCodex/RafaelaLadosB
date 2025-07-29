@@ -512,18 +512,18 @@ footer {
 
     /* Ajuste para el grid de letras en pantallas más pequeñas */
     .accordion-grid-headers {
-        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Más compacto */
+        grid-template-columns: repeat(3, 1fr); /* 3 columnas en tablets */
         gap: 8px;
     }
 
     .accordion-header {
         font-size: 1em;
-        height: 50px;
-        padding: 10px;
+        height: auto;
+        padding: 12px;
     }
 
     .accordion-header h3 {
-        font-size: 1.5em; /* Tamaño de la letra en el encabezado */
+        font-size: 1.8em; /* Tamaño de la letra en el encabezado */
     }
 
     .grid-container {
@@ -539,14 +539,14 @@ footer {
 /* Para pantallas aún más pequeñas, como móviles */
 @media (max-width: 480px) {
     .accordion-grid-headers {
-        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); /* Más columnas si es posible */
+        grid-template-columns: repeat(2, 1fr); /* 2 columnas en móviles */
         gap: 5px;
     }
     .accordion-header {
-        height: 45px;
-        padding: 8px;
+        height: auto;
+        padding: 10px;
     }
     .accordion-header h3 {
-        font-size: 1.2em;
+        font-size: 1.5em;
     }
 }
