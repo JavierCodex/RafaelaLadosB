@@ -1,21 +1,13 @@
 // --- CONSTANTES GLOBALES Y URLS DE LA API DE GOOGLE SHEETS ---
-// IMPORTANTE: Tu API Key. Reemplaza 'TU_API_KEY' con tu clave real.
-// Para proyectos de mayor escala o con datos sensibles,
-// no se recomienda exponer la API Key directamente en el frontend.
-// Para este caso con datos públicos, es aceptable.
-const API_KEY = 'AIzaSyAP4nFhq5mON1hT0yllhtT9uj8zqPjw-3E';
+const API_KEY = 'AIzaSyAP4nFhq5mON1hT0yllhtT9uj8zqPjw-3E'; // ¡Reemplaza con tu clave real si es diferente!
+const SPREADSHEET_ID = '19g6yEmw7goAvQLSO5sGu87rHpEPRSknr-YNSTFCSrVY'; // ¡Reemplaza con tu ID real si es diferente!
 
-// Tu Spreadsheet ID. Reemplaza 'TU_SPREADSHEET_ID' con tu ID real.
-// Este ID es el mismo para todas tus hojas de cálculo en el mismo archivo.
-const SPREADSHEET_ID = '19g6yEmw7goAvQLSO5sGu87rHpEPRSknr-YNSTFCSrVY';
-
-// URLs de la API para cada hoja, solicitando el formato JSON (&alt=json)
-const URL_BANDAS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Bandas?key=${API_KEY}&alt=json`;
-const URL_INTEGRANTES_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Integrantes?key=${API_KEY}&alt=json`;
-const URL_EVENTOS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Eventos?key=${API_KEY}&alt=json`;
-const URL_MULTIMEDIA_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Multimedia?key=${API_KEY}&alt=json`;
+// URLs de la API para cada hoja, solicitando el formato JSON y valores formateados
+const URL_BANDAS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Bandas?key=${API_KEY}&valueRenderOption=FORMATTED_VALUE`;
+const URL_INTEGRANTES_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Integrantes?key=${API_KEY}&valueRenderOption=FORMATTED_VALUE`;
+const URL_EVENTOS_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Eventos?key=${API_KEY}&valueRenderOption=FORMATTED_VALUE`;
+const URL_MULTIMEDIA_API_JSON = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/Multimedia?key=${API_KEY}&valueRenderOption=FORMATTED_VALUE`;
 // --- FIN CONSTANTES GLOBALES ---
-
 
 let todasLasBandas = [];
 let todosLosIntegrantes = [];
@@ -23,10 +15,11 @@ let todosLosEventos = [];
 let todaLaMultimedia = [];
 
 // Referencias a elementos del DOM
-const bandasContainer = document.getElementById('bandasContainer');
-const integrantesContainer = document.getElementById('integrantesContainer');
-const eventosContainer = document.getElementById('eventosContainer');
-const multimediaContainer = document.getElementById('multimediaContainer');
+const bandasContainer = document.getElementById('bandasContainer'); // Este ya no se usa para el listado alfabético
+const integrantesContainer = document.getElementById('integrantesContainer'); // Podrías querer usarlo para mostrar detalles
+const eventosContainer = document.getElementById('eventosContainer'); // Podrías querer usarlo para mostrar detalles
+const multimediaContainer = document.getElementById('multimediaContainer'); // Podrías querer usarlo para mostrar detalles
+
 const bandasAlfabeticoContainer = document.getElementById('bandasAlfabeticoContainer'); // Contenedor para el listado alfabético de bandas
 
 const buscarGlobalInput = document.getElementById('buscarGlobalInput');
@@ -34,64 +27,73 @@ const buscarGlobalBtn = document.getElementById('buscarGlobalBtn');
 const buscarBandasInput = document.getElementById('buscarBandasInput');
 const buscarBandasBtn = document.getElementById('buscarBandasBtn');
 
-// Referencias a los contenedores de elementos históricos y galería multimedia
 const eventosHistoricosDiv = document.getElementById('eventosHistoricosDiv');
 const galeriaMultimediaDiv = document.getElementById('galeriaMultimediaDiv');
+const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn'); // No se usa con el listado alfabético completo
 
-// Botón "Ver más bandas" (se mantiene por si acaso, aunque no se usa en el listado alfabético)
-const loadMoreBandsBtn = document.getElementById('loadMoreBandsBtn');
 
-// --- Funciones de Carga de Datos ---
+// --- Funciones de Carga de Datos (Usando Google Sheets API) ---
 
 /**
- * Carga datos desde una URL de Google Sheet y los parsea a un array de objetos.
- * @param {string} url - La URL pública de la hoja de cálculo.
- * @param {string} sheetName - El nombre de la hoja (para logs).
+ * Carga datos desde una URL de la Google Sheets API y los parsea.
+ * @param {string} url - La URL de la API para la hoja.
+ * @param {string} sheetName - El nombre de la hoja (para logs y mensajes de error).
  * @returns {Promise<Array<Object>>} - Una promesa que resuelve con los datos parseados.
  */
-async function cargarDatosDesdeSheet(url, sheetName) {
-    console.log(`DEBUG: Intentando cargar ${sheetName} desde: ${url}`);
+async function cargarDatosDesdeSheetAPI(url, sheetName) {
+    console.log(`DEBUG: Intentando cargar ${sheetName} desde API: ${url}`);
     try {
         const response = await fetch(url);
         if (!response.ok) {
-            // Si la respuesta no es 2xx (ej. 404, 500)
-            const errorText = await response.text();
-            throw new Error(`Error HTTP ${response.status} al cargar ${sheetName}: ${response.statusText} - ${errorText}`);
+            // Intenta leer el mensaje de error de la API si está disponible
+            let errorDetail = response.statusText;
+            try {
+                const errorJson = await response.json();
+                if (errorJson && errorJson.error && errorJson.error.message) {
+                    errorDetail = errorJson.error.message;
+                }
+            } catch (e) {
+                // No se pudo parsear el error JSON
+            }
+            throw new Error(`Error HTTP ${response.status} al cargar ${sheetName} (API): ${errorDetail}`);
         }
-        const csvText = await response.text();
-        console.log(`DEBUG: ${sheetName} cargados correctamente. Datos CSV recibidos.`);
-        return parsearCSV(csvText);
+        const data = await response.json();
+        console.log(`DEBUG: ${sheetName} cargados correctamente. Datos JSON de API recibidos.`, data);
+        return parsearJSONDesdeAPI(data.values); // Los datos están en data.values
     } catch (error) {
-        console.error(`ERROR al cargar ${sheetName}:`, error);
-        // Dependiendo del error, podrías mostrar un mensaje al usuario
-        // alert(`No se pudieron cargar los datos de ${sheetName}. Por favor, verifica la conexión o la configuración de la hoja.`);
+        console.error(`ERROR al cargar ${sheetName} (API):`, error);
+        // Sugerir posibles causas al usuario si es un error de API Key/Permisos
+        if (error.message.includes('API Key not valid') || error.message.includes('PERMISSION_DENIED')) {
+            alert(`ATENCIÓN: Error de Google Sheets API para "${sheetName}". Posiblemente la API Key es incorrecta, la API no está habilitada en Google Cloud, o la hoja no es pública/accesible. Verifica la consola para más detalles.`);
+        } else {
+            alert(`No se pudieron cargar los datos de ${sheetName}. Por favor, verifica la conexión o la configuración de la hoja.`);
+        }
         return []; // Retornar un array vacío para que la aplicación no falle
     }
 }
 
 /**
- * Parsea un string CSV a un array de objetos.
- * La primera fila se usa como cabeceras de los objetos.
- * @param {string} csv - El string en formato CSV.
- * @returns {Array<Object>} - Array de objetos representando las filas del CSV.
+ * Parsea el array de arrays de la respuesta de la Google Sheets API a un array de objetos.
+ * La primera fila se usa como cabeceras.
+ * @param {Array<Array<string>>} values - El array de arrays de datos de la API.
+ * @returns {Array<Object>} - Array de objetos representando las filas.
  */
-function parsearCSV(csv) {
-    const lines = csv.split('\n').filter(line => line.trim() !== ''); // Filtrar líneas vacías
-    if (lines.length === 0) return [];
+function parsearJSONDesdeAPI(values) {
+    if (!values || values.length === 0) return [];
 
-    const headers = lines[0].split(',').map(header => header.trim()); // Limpiar espacios de los encabezados
+    const headers = values[0].map(header => header.trim());
     const data = [];
 
-    for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(value => value.trim()); // Limpiar espacios de los valores
-        if (values.length === headers.length) {
+    for (let i = 1; i < values.length; i++) {
+        const row = values[i];
+        if (row.length === headers.length) {
             const rowObject = {};
             headers.forEach((header, index) => {
-                rowObject[header] = values[index];
+                rowObject[header] = row[index] ? row[index].trim() : ''; // Asegurarse de que el valor exista antes de trim
             });
             data.push(rowObject);
         } else {
-            console.warn(`WARN: Fila CSV con número de columnas inconsistente en la línea ${i + 1}:`, lines[i]);
+            console.warn(`WARN: Fila de API con número de columnas inconsistente en la línea ${i + 1}. Esperado ${headers.length}, Obtenido ${row.length}.`, row);
         }
     }
     return data;
@@ -101,13 +103,13 @@ function parsearCSV(csv) {
  * Inicializa la carga de todos los datos necesarios al cargar la página.
  */
 async function inicializarDatos() {
-    console.log("DEBUG: Iniciando carga de datos iniciales.");
+    console.log("DEBUG: Iniciando carga de datos iniciales usando Google Sheets API.");
     try {
         [todasLasBandas, todosLosIntegrantes, todosLosEventos, todaLaMultimedia] = await Promise.all([
-            cargarDatosDesdeSheet(URL_BANDAS, 'Bandas'),
-            cargarDatosDesdeSheet(URL_INTEGRANTES, 'Integrantes'),
-            cargarDatosDesdeSheet(URL_EVENTOS, 'Eventos'),
-            cargarDatosDesdeSheet(URL_MULTIMEDIA, 'Multimedia')
+            cargarDatosDesdeSheetAPI(URL_BANDAS_API_JSON, 'Bandas'),
+            cargarDatosDesdeSheetAPI(URL_INTEGRANTES_API_JSON, 'Integrantes'),
+            cargarDatosDesdeSheetAPI(URL_EVENTOS_API_JSON, 'Eventos'),
+            cargarDatosDesdeSheetAPI(URL_MULTIMEDIA_API_JSON, 'Multimedia')
         ]);
 
         console.log(`DEBUG: Datos iniciales cargados. Cantidad de:`);
@@ -122,7 +124,7 @@ async function inicializarDatos() {
     } catch (error) {
         console.error("ERROR: Fallo en la inicialización de datos:", error);
         if (bandasAlfabeticoContainer) {
-            bandasAlfabeticoContainer.innerHTML = '<p>Lo sentimos, no pudimos cargar los datos. Por favor, inténtalo de nuevo más tarde o contacta al administrador.</p>';
+            bandasAlfabeticoContainer.innerHTML = '<p>Lo sentimos, no pudimos cargar los datos. Por favor, asegúrate de que tu API Key sea válida y que las hojas estén configuradas correctamente.</p>';
         }
     }
 }
@@ -150,7 +152,8 @@ function mostrarBandasEnCardsAlfabetico(bandasAMostrar) {
     // Agrupar bandas por la primera letra de su nombre
     const gruposPorLetra = {};
     bandasAMostrar.forEach(banda => {
-        const primeraLetra = banda.Nombre_Banda ? banda.Nombre_Banda.charAt(0).toUpperCase() : '#'; // Usa '#' para bandas sin nombre
+        // Asegúrate de que Nombre_Banda exista antes de acceder a charAt(0)
+        const primeraLetra = banda.Nombre_Banda ? banda.Nombre_Banda.charAt(0).toUpperCase() : '#';
         if (!gruposPorLetra[primeraLetra]) {
             gruposPorLetra[primeraLetra] = [];
         }
@@ -244,24 +247,14 @@ function mostrarDetalleBanda(bandaSeleccionada) {
 
     // Filtrar integrantes de esta banda
     const integrantesDeBanda = todosLosIntegrantes.filter(integrante => {
-        // Asegúrate de que ID_Banda existe y no está vacío antes de intentar split
         const int_ID_Banda_RAW = integrante.ID_Banda;
-        console.log("DEBUG: Procesando integrante:", integrante.Nombre_Integrante, 'ID_Banda del integrante RAW:', int_ID_Banda_RAW);
-
         if (!int_ID_Banda_RAW || int_ID_Banda_RAW.trim() === '') {
-            console.log("DEBUG: Integrante sin ID_Banda o ID_Banda vacío (return false):", integrante.Nombre_Integrante);
-            return false; // Si el integrante no tiene ID_Banda, no lo incluimos
+            return false;
         }
-
         const integranteBandasIDs = int_ID_Banda_RAW.split(',').map(id => id.trim());
-        console.log("DEBUG: IDs de banda del integrante (parseados):", integranteBandasIDs);
-
-        const isMatch = integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
-        console.log("DEBUG: Coincide el ID de banda (", bandaSeleccionada.ID_Banda, ") con el integrante?", isMatch, integrante.Nombre_Integrante);
-        return isMatch;
+        return integranteBandasIDs.includes(bandaSeleccionada.ID_Banda);
     });
     const nombresIntegrantes = integrantesDeBanda.map(int => int.Nombre_Integrante).join(', ') || 'No disponibles';
-    console.log("DEBUG: Nombres de integrantes resultantes:", nombresIntegrantes);
 
     // Filtrar eventos donde participe esta banda
     const eventosParticipados = todosLosEventos.filter(evento => {
@@ -273,14 +266,12 @@ function mostrarDetalleBanda(bandaSeleccionada) {
         return eventoBandasIDs.includes(bandaSeleccionada.ID_Banda);
     });
     const nombresEventos = eventosParticipados.map(evento => {
-        // Formatear la fecha si existe
         const fecha = evento.Fecha ? new Date(evento.Fecha).toLocaleDateString() : 'Sin fecha';
         return `${evento.Descripcion || 'Evento sin título'} (${fecha})`;
     }).join('\n- ') || 'Ninguno';
 
     // Filtrar multimedia relacionada con esta banda
     const multimediaRelacionada = todaLaMultimedia.filter(multimedia => {
-        // Asegúrate de que Tipo_Relacion y ID_Item_Relacionado existen
         if (!multimedia.Tipo_Relacion || !multimedia.ID_Item_Relacionado) {
             return false;
         }
@@ -290,15 +281,13 @@ function mostrarDetalleBanda(bandaSeleccionada) {
     let multimediaDetail = multimediaRelacionada.length > 0 ? '\nMultimedia relacionada:\n' : 'Multimedia: Ninguno';
     multimediaRelacionada.forEach(media => {
         let mediaLink = 'N/A';
-        // Si es un video de YouTube, mostrar el enlace directamente
         if (media.Tipo === 'Video' && media.URL) {
-            // Expresión regular para extraer el ID de video de YouTube de varias URLs
             const youtubeRegex = /(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|watch\?v=|youtu\.be\/|\/v\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
             const videoMatch = media.URL.match(youtubeRegex);
             if (videoMatch && videoMatch[1]) {
                 mediaLink = `https://www.youtube.com/watch?v=${videoMatch[1]}`;
             } else {
-                mediaLink = media.URL; // Enlace original si no es un video de YouTube o no se puede parsear
+                mediaLink = media.URL;
             }
         } else if (media.URL) {
             mediaLink = media.URL;
@@ -311,18 +300,15 @@ function mostrarDetalleBanda(bandaSeleccionada) {
         `Detalle de Banda: ${bandaSeleccionada.Nombre_Banda || 'N/A'}\n` +
         `Género: ${bandaSeleccionada.Genero || 'N/A'}\n` +
         `Años de actividad: ${bandaSeleccionada.Anos_Actividad || 'Sin fecha'}\n` +
-        `Biografía: ${bandaSeleccionada.Biografia || 'No disponibles'}\n` +
+        `Biografía: ${bandaSeleccionada.Biografia || 'No disponible'}\n` +
         `Integrantes: ${nombresIntegrantes}\n\n` +
-        `Eventos Participados: ${nombresEventos}\n\n` +
+        `Eventos Participados:\n- ${nombresEventos}\n\n` +
         multimediaDetail
     );
 }
 
 
 // --- Búsqueda Global (Integrantes, Eventos, Géneros) ---
-/**
- * Inicializa la funcionalidad de búsqueda global.
- */
 function inicializarBusquedaGlobal() {
     if (buscarGlobalBtn && buscarGlobalInput) {
         buscarGlobalBtn.addEventListener('click', realizarBusquedaGlobal);
@@ -337,33 +323,26 @@ function inicializarBusquedaGlobal() {
     }
 }
 
-/**
- * Realiza una búsqueda global en bandas, integrantes y eventos.
- */
 function realizarBusquedaGlobal() {
     const searchTerm = buscarGlobalInput.value.toLowerCase();
     console.log("DEBUG: Realizando búsqueda global para:", searchTerm);
 
-    // Buscar en bandas (por nombre o género)
     const resultadosBandas = todasLasBandas.filter(banda =>
         (banda.Nombre_Banda && banda.Nombre_Banda.toLowerCase().includes(searchTerm)) ||
         (banda.Genero && banda.Genero.toLowerCase().includes(searchTerm))
     );
 
-    // Buscar en integrantes (por nombre o instrumento)
     const resultadosIntegrantes = todosLosIntegrantes.filter(integrante =>
         (integrante.Nombre_Integrante && integrante.Nombre_Integrante.toLowerCase().includes(searchTerm)) ||
         (integrante.Instrumento && integrante.Instrumento.toLowerCase().includes(searchTerm))
     );
 
-    // Buscar en eventos (por descripción, fecha o lugar)
     const resultadosEventos = todosLosEventos.filter(evento =>
         (evento.Descripcion && evento.Descripcion.toLowerCase().includes(searchTerm)) ||
         (evento.Fecha && evento.Fecha.toLowerCase().includes(searchTerm)) ||
         (evento.Lugar && evento.Lugar.toLowerCase().includes(searchTerm))
     );
 
-    // Mostrar resultados (aquí podrías hacer algo más sofisticado, como renderizar en diferentes secciones)
     let resultadosHTML = '<h4>Resultados de Búsqueda:</h4>';
 
     if (resultadosBandas.length > 0) {
@@ -393,11 +372,9 @@ function realizarBusquedaGlobal() {
         resultadosHTML += '<p>No se encontraron eventos.</p>';
     }
 
-    // Mostrar en el contenedor de resultados de búsqueda (asumiendo que tienes uno)
     const searchResultsDiv = document.getElementById('searchResults');
     if (searchResultsDiv) {
         searchResultsDiv.innerHTML = resultadosHTML;
-        // Añadir event listeners a los nuevos botones "Ver más"
         searchResultsDiv.querySelectorAll('.ver-mas-btn[data-type="banda"]').forEach(button => {
             button.addEventListener('click', () => {
                 const bandaId = button.dataset.id;
@@ -414,9 +391,6 @@ function realizarBusquedaGlobal() {
 
 
 // --- Búsqueda de Bandas Específica ---
-/**
- * Inicializa la funcionalidad de búsqueda de bandas.
- */
 function inicializarBusquedaBandas() {
     if (buscarBandasBtn && buscarBandasInput) {
         buscarBandasBtn.addEventListener('click', realizarBusquedaBandas);
@@ -431,9 +405,6 @@ function inicializarBusquedaBandas() {
     }
 }
 
-/**
- * Realiza una búsqueda de bandas por nombre o género.
- */
 function realizarBusquedaBandas() {
     const searchTerm = buscarBandasInput.value.toLowerCase();
     console.log("DEBUG: Realizando búsqueda de bandas para:", searchTerm);
@@ -450,14 +421,12 @@ function realizarBusquedaBandas() {
 document.addEventListener('DOMContentLoaded', () => {
     inicializarDatos();
     inicializarBusquedaGlobal();
-    inicializarBusquedaBandas(); // Asegúrate de que esta función exista si tienes un segundo formulario de búsqueda
+    inicializarBusquedaBandas();
 
-    // Inicializar secciones de eventos históricos y galería multimedia
-    // Estas funciones son placeholders si no tienen contenido dinámico por ahora
     if (eventosHistoricosDiv) {
         eventosHistoricosDiv.innerHTML = `
             <h2>Eventos históricos</h2>
-            <p>Eventos disponibles próximamente (o muestra aquí los eventos).</p>
+            <p>Listado de eventos disponible en breve.</p>
         `;
         console.log("DEBUG: Elemento eventosHistoricosDiv encontrado.");
     } else {
@@ -467,19 +436,18 @@ document.addEventListener('DOMContentLoaded', () => {
     if (galeriaMultimediaDiv) {
         galeriaMultimediaDiv.innerHTML = `
             <h2>Galería multimedia</h2>
-            <p>Contenido multimedia disponible próximamente (o muestra aquí el contenido).</p>
+            <p>Contenido multimedia disponible en breve.</p>
         `;
         console.log("DEBUG: Elemento galeriaMultimediaDiv encontrado.");
     } else {
         console.warn("DEBUG: Elemento galeriaMultimediaDiv no encontrado.");
     }
 
-    // Listener para el botón de "Descargar" el libro (si existe)
     const downloadBookBtn = document.getElementById('downloadBookBtn');
     if (downloadBookBtn) {
         downloadBookBtn.addEventListener('click', () => {
             alert('Haz clic en Aceptar para descargar el libro en formato PDF.');
-            // Aquí iría la lógica para iniciar la descarga, por ejemplo:
+            // Aquí iría la lógica para iniciar la descarga:
             // window.open('ruta/a/tu/libro.pdf', '_blank');
         });
     }
