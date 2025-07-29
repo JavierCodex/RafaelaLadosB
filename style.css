@@ -192,29 +192,44 @@ main {
 .accordion-container {
     width: 100%;
     margin: 20px auto;
-    border: 1px solid var(--color-medium-gray);
-    border-radius: 8px;
+    /* Se quitan los bordes y sombras directas de aquí para que el grid se vea mejor */
+    /* border: 1px solid var(--color-medium-gray); */
+    /* border-radius: 8px; */
     overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    /* box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); */
+}
+
+/* Contenedor del grid para los encabezados de las letras */
+.accordion-grid-headers {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* 5 columnas aprox, ajustable */
+    gap: 10px; /* Espacio entre las "letras" */
+    margin-bottom: 20px; /* Espacio antes del primer contenido de acordeón */
 }
 
 .accordion-item {
-    border-bottom: 1px solid var(--color-medium-gray);
+    /* Cada item del acordeón (letra + contenido) */
+    border: 1px solid var(--color-medium-gray); /* Borde para cada item de acordeón */
+    border-radius: 8px;
+    margin-bottom: 10px; /* Espacio entre los items del acordeón (para cuando está expandido) */
+    overflow: hidden; /* Asegura que el border-radius se aplique */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Sombra para cada item */
 }
 
-.accordion-item:last-child {
-    border-bottom: none;
-}
-
+/* Encabezado de cada letra (se aplica el grid a estos elementos) */
 .accordion-header {
     background-color: var(--color-black); /* Encabezado de la letra en negro */
     color: var(--color-white);
-    padding: 18px 25px;
+    padding: 15px; /* Ajustado para el grid, era 18px 25px */
     cursor: pointer;
     display: flex;
     justify-content: space-between;
     align-items: center;
     transition: background-color 0.3s ease, color 0.3s ease;
+    text-align: center; /* Centrar el texto de la letra */
+    border-radius: 8px; /* Bordes redondeados para cada celda de la cuadrícula */
+    height: 60px; /* Altura fija para que todas las "celdas" sean uniformes */
+    box-sizing: border-box; /* Incluir padding y borde en la altura */
 }
 
 .accordion-header:hover {
@@ -228,9 +243,10 @@ main {
 
 .accordion-header h3 {
     margin: 0;
-    font-size: 1.3em;
+    font-size: 1.8em; /* Tamaño grande para la letra */
     color: inherit; /* Hereda el color del padre (white o red) */
     font-weight: 700; /* Bold para el H3 del acordeón */
+    flex-grow: 1; /* Permite que el h3 ocupe el espacio */
 }
 
 .accordion-header::after {
@@ -239,6 +255,7 @@ main {
     font-weight: 900; /* Black para el icono */
     color: var(--color-white); /* Icono siempre blanco */
     transition: transform 0.3s ease;
+    margin-left: 5px; /* Espacio entre la letra y el icono */
 }
 
 .accordion-header.active::after {
@@ -247,8 +264,9 @@ main {
 }
 
 .accordion-content {
-    padding: 15px 25px;
+    padding: 15px 20px; /* Ajustado para el contenido */
     background-color: var(--color-white); /* Contenido del acordeón en blanco */
+    border-top: 1px solid var(--color-medium-gray); /* Borde superior para separar del header */
 }
 
 /* Band Card Styles (within accordion-content) */
@@ -260,6 +278,10 @@ main {
     margin-bottom: 15px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.band-card:last-child {
+    margin-bottom: 0; /* Eliminar margen inferior en la última tarjeta */
 }
 
 .band-card:hover {
@@ -426,6 +448,22 @@ footer {
         width: 95%;
     }
 
+    /* Ajuste para el grid de letras en pantallas más pequeñas */
+    .accordion-grid-headers {
+        grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); /* Más compacto */
+        gap: 8px;
+    }
+
+    .accordion-header {
+        font-size: 1em;
+        height: 50px;
+        padding: 10px;
+    }
+
+    .accordion-header h3 {
+        font-size: 1.5em; /* Tamaño de la letra en el encabezado */
+    }
+
     .grid-container {
         grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
         gap: 15px;
@@ -433,5 +471,20 @@ footer {
 
     .accordion-header h3 {
         font-size: 1.1em;
+    }
+}
+
+/* Para pantallas aún más pequeñas, como móviles */
+@media (max-width: 480px) {
+    .accordion-grid-headers {
+        grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); /* Más columnas si es posible */
+        gap: 5px;
+    }
+    .accordion-header {
+        height: 45px;
+        padding: 8px;
+    }
+    .accordion-header h3 {
+        font-size: 1.2em;
     }
 }
