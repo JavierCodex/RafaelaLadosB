@@ -190,20 +190,30 @@ function mostrarBandasEnCardsAlfabetico(bandasAMostrar) {
 
         // Lógica de clic para mostrar/ocultar el contenido
         accordionHeader.addEventListener('click', () => {
-            // Ocultar todos los contenidos de acordeón abiertos
+            const currentContent = accordionContent; // Referencia al div de contenido para este encabezado específico
+            const currentHeader = accordionHeader;   // Referencia al div de encabezado para este encabezado específico
+
+            const isCurrentlyVisible = currentContent.style.display === 'block';
+
+            // Primero, cierra todos los demás acordeones abiertos
             document.querySelectorAll('#bandas .accordion-content').forEach(content => {
-                content.style.display = 'none';
+                if (content !== currentContent) { // No ocultes el actual todavía
+                    content.style.display = 'none';
+                }
             });
-            // Remover la clase 'active' de todos los headers
             document.querySelectorAll('#bandas .accordion-header').forEach(header => {
-                header.classList.remove('active');
+                if (header !== currentHeader) { // No quites la clase 'active' del actual todavía
+                    header.classList.remove('active');
+                }
             });
 
-            // Alternar la visibilidad del contenido actual y la clase 'active' del header
-            const isVisible = accordionContent.style.display === 'block';
-            if (!isVisible) {
-                accordionContent.style.display = 'block';
-                accordionHeader.classList.add('active');
+            // Ahora, alterna el acordeón actual
+            if (isCurrentlyVisible) {
+                currentContent.style.display = 'none';
+                currentHeader.classList.remove('active');
+            } else {
+                currentContent.style.display = 'block';
+                currentHeader.classList.add('active');
             }
         });
     });
@@ -614,7 +624,7 @@ function renderEvents(startIndex, endIndex) {
         }
 
         eventoCard.innerHTML = `
-            <h4>${evento.Descripcion || 'Evento sin título'}</h4> <!-- Corregido a 'Descripcion' -->
+            <h4>${evento.Descripcion || 'Evento sin título'}</h4>
             <p>Fecha: ${evento.Fecha || 'Sin fecha'}</p>
             <p>Lugar: ${evento.Lugar || 'Desconocido'}</p>
             <p>Bandas: ${bandasHtml}</p>
@@ -646,7 +656,7 @@ function renderMultimedia(startIndex, endIndex) {
         mediaCard.classList.add('media-card');
         
         // Solo el nombre dado en Descripcion
-        let mediaContentHTML = `<h4>${item.Descripcion || 'Contenido sin título'}</h4>`; // Corregido a 'Descripcion'
+        let mediaContentHTML = `<h4>${item.Descripcion || 'Contenido sin título'}</h4>`; 
 
         if (item.URL && item.Tipo_Relacion) {
             const type = item.Tipo_Relacion.toUpperCase();
