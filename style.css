@@ -69,6 +69,10 @@ header {
     padding: 1.5rem 0; /* Más padding vertical */
     text-align: center;
     box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3); /* Sombra más oscura */
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 999;
 }
 
 header h1 {
@@ -623,4 +627,15 @@ html {
   margin-right: 10px;
   color: #2c3e50; /* Podés ajustar según tu paleta */
   font-size: 1.5rem;
+}
+
+#menuItems.hidden {
+  display: none;
+}
+
+.mobile-nav {
+  position: fixed;
+  top: 0;
+  right: 0;
+  padding: 10px;
 }
