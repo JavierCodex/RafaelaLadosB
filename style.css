@@ -563,9 +563,9 @@ footer {
 }
 
 #libro {
-  padding: 40px 80px; /* Más aire lateral */
+  padding: 40px 40px; /* Más aire lateral */
   text-align: center; /* Centra todo el contenido */
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto; /* Centra el bloque en la página */
 }
 
@@ -577,7 +577,7 @@ footer {
 }
 
 #libro p {
-  max-width: 700px;
+  max-width: 850px;
   margin: 0 auto;
   line-height: 1.6;
   font-size: 1.05em;
