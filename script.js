@@ -716,14 +716,3 @@ function renderMultimedia(startIndex, endIndex) {
         });
     });
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (localStorage.getItem('modoOscuro') === 'true') {
-    document.body.classList.add('dark-mode');
-  }
-
-  document.getElementById('toggleDarkMode').addEventListener('click', () => {
-    document.body.classList.toggle('dark-mode');
-    localStorage.setItem('modoOscuro', document.body.classList.contains('dark-mode'));
-  });
-});
