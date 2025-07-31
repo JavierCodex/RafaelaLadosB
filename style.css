@@ -24,6 +24,12 @@ body {
     font-weight: 400; /* Peso regular para el texto general */
 }
 
+ul {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
 a {
     color: var(--color-primary-red);
     text-decoration: none;
