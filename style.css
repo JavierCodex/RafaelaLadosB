@@ -601,3 +601,26 @@ html {
   transform: translateY(-2px) scale(1.03);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
+
+.contacto-lista {
+  list-style: none;
+  padding: 0;
+}
+
+.contacto-lista li {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.contacto-lista a:hover {
+  text-decoration: underline;
+  color: #2c3e50;
+}
+
+.contacto-lista i {
+  margin-right: 10px;
+  color: #3498db; /* Podés ajustar según tu paleta */
+  font-size: 1.5rem;
+}
