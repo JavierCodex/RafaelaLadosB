@@ -577,8 +577,9 @@ footer {
 }
 
 #libro p {
-  max-width: 850px;
+  max-width: 850px; /* Más ancho para mejor lectura */
   margin: 0 auto;
   line-height: 1.6;
   font-size: 1.05em;
+  text-align: justify;
 }
