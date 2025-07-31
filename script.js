@@ -716,3 +716,7 @@ function renderMultimedia(startIndex, endIndex) {
         });
     });
 }
+
+document.getElementById('menuToggle').addEventListener('click', () => {
+  document.getElementById('menuItems').classList.toggle('hidden');
+});
