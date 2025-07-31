@@ -602,3 +602,22 @@ html {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+body.dark-mode {
+  background-color: var(--color-black);
+  color: var(--color-light-gray);
+}
+
+body.dark-mode .section-container {
+  background-color: #2a2a2a;
+  border-color: #555;
+}
+
+body.dark-mode h1, 
+body.dark-mode h2, 
+body.dark-mode h3 {
+  color: var(--color-white);
+}
+
+body.dark-mode a {
+  color: #ff6666;
+}
