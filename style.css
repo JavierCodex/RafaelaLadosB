@@ -583,3 +583,22 @@ footer {
   font-size: 1.05em;
   text-align: justify;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+.band-card:hover,
+.event-card:hover,
+.media-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.button:hover,
+.ver-mas-btn:hover,
+.load-more-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
