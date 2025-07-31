@@ -561,3 +561,24 @@ footer {
 #libro p {
     text-align: justify;
 }
+
+#libro {
+  padding: 40px 80px; /* Más aire lateral */
+  text-align: center; /* Centra todo el contenido */
+  max-width: 960px;
+  margin: 0 auto; /* Centra el bloque en la página */
+}
+
+#libro img {
+  display: block;
+  margin: 0 auto 20px auto; /* Centrado + espacio inferior */
+  max-width: 300px; /* Tamaño moderado para mantener proporción */
+  height: auto;
+}
+
+#libro p {
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+  font-size: 1.05em;
+}
