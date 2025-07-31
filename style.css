@@ -635,9 +635,30 @@ html {
 
 .mobile-nav {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 60px;
+  right: 20px;
+  z-index: 1000;
+}
+
+#menuItems {
+  transition: all 0.3s ease;
+  background-color: #1a1a1a; /* fondo oscuro que combina con tu header */
+  color: #fff;               /* texto claro para contrastar */
+  border: 1px solid #c0392b; /* detalle rojo para coherencia visual */
   padding: 10px;
+  border-radius: 4px;
+  position: absolute;
+  top: 60px;   /* ajustá según tu diseño */
+  right: 20px;
+  min-width: 180px;
+  z-index: 1000;
+}
+
+#menuItems li a {
+  color: #fff;
+  padding: 8px 12px;
+  display: block;
+  text-decoration: none;
 }
 
 #scrollTopBtn {
