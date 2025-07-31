@@ -639,3 +639,18 @@ html {
   right: 0;
   padding: 10px;
 }
+
+#scrollTopBtn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  font-size: 1.5em;
+  background-color: #c0392b;
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  padding: 10px 15px;
+  cursor: pointer;
+  display: none;
+  z-index: 999;
+}
